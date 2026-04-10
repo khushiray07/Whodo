@@ -8,7 +8,8 @@ import { colors } from '../constants/theme';
 import { useAuth } from '../hooks/useAuth';
 import { registerForPushNotifications } from '../lib/push';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { WebContainer } from '../components/WebContainer';
+import { Toast } from '../components/Toast';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -75,6 +76,8 @@ export default function RootLayout() {
         <Stack.Screen name="share/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="join/[code]" />
       </Stack>
+      <Toast />
+      <ConfirmModal />
     </ErrorBoundary>
   );
 }

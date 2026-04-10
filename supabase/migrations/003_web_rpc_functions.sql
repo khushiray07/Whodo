@@ -1,10 +1,10 @@
 -- Public RPC for invite code lookup (unauthenticated)
 -- Returns only plan title, participant count, and date. No user data, no plan ID.
 CREATE OR REPLACE FUNCTION public.lookup_plan_by_invite(code TEXT)
-RETURNS TABLE(title TEXT, participant_count BIGINT, event_date DATE)
+RETURNS TABLE(id UUID, title TEXT, participant_count BIGINT, event_date DATE)
 LANGUAGE sql SECURITY DEFINER
 AS $$
-  SELECT p.title, COUNT(pt.id), p.event_date
+  SELECT p.id, p.title, COUNT(pt.id), p.event_date
   FROM plans p LEFT JOIN participants pt ON pt.plan_id = p.id
   WHERE p.invite_code = code AND p.status = 'active'
   GROUP BY p.id, p.title, p.event_date;

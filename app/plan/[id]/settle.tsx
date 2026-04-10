@@ -74,7 +74,7 @@ export default function SettleTab() {
       <Text style={styles.sectionLabel}>{strings.smartSettlements}</Text>
       <View style={styles.list}>
         {settlements.map((s, i) => (
-          <SettlementCard key={`${s.from.id}-${s.to.id}-${i}`} settlement={s} planTitle={plan?.title} />
+          <SettlementCard key={`${s.from.id}-${s.to.id}-${i}`} settlement={s} planTitle={plan?.title} planId={id!} />
         ))}
       </View>
 

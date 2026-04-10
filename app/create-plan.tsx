@@ -14,6 +14,7 @@ import { assignColor } from '../lib/colors';
 import { colors, fonts, spacing, radii } from '../constants/theme';
 import { strings } from '../constants/strings';
 import { showAlert } from '../lib/alert';
+import { WebContainer } from '../components/WebContainer';
 import type { PlanTemplate } from '../types/database';
 
 export default function CreatePlanScreen() {
@@ -65,104 +66,106 @@ export default function CreatePlanScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-          <Text style={styles.closeText}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>{strings.createPlanTitle}</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      {/* Scrollable content */}
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.subtitle}>{strings.createPlanSubtitle}</Text>
-
-        <Input
-          label={strings.planNameLabel}
-          placeholder={strings.planNamePlaceholder}
-          value={title}
-          onChangeText={setTitle}
-        />
-
-        <DatePicker
-          label={strings.planDateLabel}
-          value={eventDate}
-          onChange={setEventDate}
-          placeholder="Tap to pick a date"
-        />
-
-        <Text style={styles.label}>{strings.templateLabel}</Text>
-        <View style={styles.templateGrid}>
-          {templates.map((t) => (
-            <View key={t.key} style={styles.templateCell}>
-              <TemplateCard
-                template={t}
-                selected={selectedTemplate === t.key}
-                onPress={() => setSelectedTemplate(t.key)}
-              />
-            </View>
-          ))}
+      <WebContainer>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
+            <Text style={styles.closeText}>✕</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>{strings.createPlanTitle}</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Organizer */}
-        <View style={styles.peopleSection}>
-          <Text style={styles.peopleTitle}>Organizer (You)</Text>
-          <View style={styles.organizerRow}>
-            <Avatar name={profile?.display_name ?? 'You'} color={assignColor(0)} size={40} />
-            <View>
-              <Text style={styles.chipName}>{profile?.display_name ?? 'You'}</Text>
-              <Text style={styles.organizerLabel}>Managing this plan</Text>
-            </View>
-          </View>
-        </View>
+        {/* Scrollable content */}
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <Text style={styles.subtitle}>{strings.createPlanSubtitle}</Text>
 
-        {/* Participants */}
-        <View style={styles.peopleSection}>
-          <Text style={styles.peopleTitle}>Who's involved?</Text>
-          <Text style={styles.peopleSubtitle}>Add people to assign tasks and split expenses.</Text>
+          <Input
+            label={strings.planNameLabel}
+            placeholder={strings.planNamePlaceholder}
+            value={title}
+            onChangeText={setTitle}
+          />
 
-          <View style={styles.chipList}>
-            {participantNames.map((name, i) => (
-              <View key={name} style={styles.chip}>
-                <Avatar name={name} color={assignColor(i + 1)} size={32} />
-                <Text style={styles.chipName}>{name}</Text>
-                <TouchableOpacity onPress={() => removeParticipant(name)}>
-                  <Text style={styles.chipRemove}>✕</Text>
-                </TouchableOpacity>
+          <DatePicker
+            label={strings.planDateLabel}
+            value={eventDate}
+            onChange={setEventDate}
+            placeholder="Tap to pick a date"
+          />
+
+          <Text style={styles.label}>{strings.templateLabel}</Text>
+          <View style={styles.templateGrid}>
+            {templates.map((t) => (
+              <View key={t.key} style={styles.templateCell}>
+                <TemplateCard
+                  template={t}
+                  selected={selectedTemplate === t.key}
+                  onPress={() => setSelectedTemplate(t.key)}
+                />
               </View>
             ))}
           </View>
 
-          <View style={styles.addNameRow}>
-            <TextInput
-              style={styles.nameInput}
-              placeholder="Add a person's name..."
-              placeholderTextColor={colors.outlineVariant}
-              value={newName}
-              onChangeText={setNewName}
-              onSubmitEditing={addParticipant}
-              returnKeyType="done"
-            />
-            {newName.trim() ? (
-              <TouchableOpacity onPress={addParticipant} style={styles.addBtn}>
-                <Text style={styles.addBtnText}>Add</Text>
-              </TouchableOpacity>
-            ) : null}
+          {/* Organizer */}
+          <View style={styles.peopleSection}>
+            <Text style={styles.peopleTitle}>Organizer (You)</Text>
+            <View style={styles.organizerRow}>
+              <Avatar name={profile?.display_name ?? 'You'} color={assignColor(0)} size={40} />
+              <View>
+                <Text style={styles.chipName}>{profile?.display_name ?? 'You'}</Text>
+                <Text style={styles.organizerLabel}>Managing this plan</Text>
+              </View>
+            </View>
           </View>
-        </View>
-      </ScrollView>
 
-      {/* Fixed bottom button */}
-      <View style={styles.bottomBar}>
-        <Button
-          title="Submit"
-          onPress={handleCreate}
-          loading={loading}
-          disabled={!title.trim()}
-        />
-        <Text style={styles.hint}>{strings.noStress}</Text>
-      </View>
+          {/* Participants */}
+          <View style={styles.peopleSection}>
+            <Text style={styles.peopleTitle}>Who's involved?</Text>
+            <Text style={styles.peopleSubtitle}>Add people to assign tasks and split expenses.</Text>
+
+            <View style={styles.chipList}>
+              {participantNames.map((name, i) => (
+                <View key={name} style={styles.chip}>
+                  <Avatar name={name} color={assignColor(i + 1)} size={32} />
+                  <Text style={styles.chipName}>{name}</Text>
+                  <TouchableOpacity onPress={() => removeParticipant(name)}>
+                    <Text style={styles.chipRemove}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.addNameRow}>
+              <TextInput
+                style={styles.nameInput}
+                placeholder="Add a person's name..."
+                placeholderTextColor={colors.outlineVariant}
+                value={newName}
+                onChangeText={setNewName}
+                onSubmitEditing={addParticipant}
+                returnKeyType="done"
+              />
+              {newName.trim() ? (
+                <TouchableOpacity onPress={addParticipant} style={styles.addBtn}>
+                  <Text style={styles.addBtnText}>Add</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Fixed bottom button */}
+        <View style={styles.bottomBar}>
+          <Button
+            title="Submit"
+            onPress={handleCreate}
+            loading={loading}
+            disabled={!title.trim()}
+          />
+          <Text style={styles.hint}>{strings.noStress}</Text>
+        </View>
+      </WebContainer>
     </SafeAreaView>
   );
 }

@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
+import { WebContainer } from '../../components/WebContainer';
 import { colors, fonts, spacing } from '../../constants/theme';
 import { strings } from '../../constants/strings';
 
@@ -96,6 +97,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <WebContainer>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -204,6 +206,7 @@ export default function LoginScreen() {
           )}
         </View>
       </KeyboardAvoidingView>
+      </WebContainer>
     </SafeAreaView>
   );
 }

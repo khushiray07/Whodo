@@ -10,6 +10,7 @@ import { assignColor } from '../../lib/colors';
 import { colors, fonts, spacing, radii } from '../../constants/theme';
 import { strings } from '../../constants/strings';
 import { showAlert } from '../../lib/alert';
+import { WebContainer } from '../../components/WebContainer';
 
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -26,18 +27,14 @@ export default function JoinScreen() {
 
   const lookupPlan = async () => {
     if (!code) return;
-    const { data, error: err } = await supabase
-      .from('plans')
-      .select('id, title')
-      .eq('invite_code', code)
-      .single();
+    const { data, error: err } = await supabase.rpc('lookup_plan_by_invite', { code });
 
-    if (err || !data) {
+    if (err || !data || data.length === 0) {
       setError(strings.invalidCode);
       return;
     }
-    setPlanTitle(data.title);
-    setPlanId(data.id);
+    setPlanTitle(data[0].title);
+    setPlanId(data[0].id);
   };
 
   const handleJoin = async () => {
@@ -90,41 +87,45 @@ export default function JoinScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Text style={styles.errorIcon}>😕</Text>
-          <Text style={styles.errorText}>{error}</Text>
-          <Button title="Go Home" onPress={() => router.replace('/(tabs)')} variant="secondary" />
-        </View>
+        <WebContainer>
+          <View style={styles.center}>
+            <Text style={styles.errorIcon}>😕</Text>
+            <Text style={styles.errorText}>{error}</Text>
+            <Button title="Go Home" onPress={() => router.replace('/(tabs)')} variant="secondary" />
+          </View>
+        </WebContainer>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.center}>
-        <Text style={styles.brand}>{strings.appName}</Text>
-        <Text style={styles.title}>{strings.joinTitle}</Text>
-        {planTitle && (
-          <View style={styles.planBadge}>
-            <Text style={styles.planName}>{planTitle}</Text>
-          </View>
-        )}
-        <Text style={styles.subtitle}>{strings.joinSubtitle}</Text>
+      <WebContainer>
+        <View style={styles.center}>
+          <Text style={styles.brand}>{strings.appName}</Text>
+          <Text style={styles.title}>{strings.joinTitle}</Text>
+          {planTitle && (
+            <View style={styles.planBadge}>
+              <Text style={styles.planName}>{planTitle}</Text>
+            </View>
+          )}
+          <Text style={styles.subtitle}>{strings.joinSubtitle}</Text>
 
-        <Input
-          label={strings.yourName}
-          placeholder="Enter your name"
-          value={name}
-          onChangeText={setName}
-        />
+          <Input
+            label={strings.yourName}
+            placeholder="Enter your name"
+            value={name}
+            onChangeText={setName}
+          />
 
-        <Button
-          title={strings.joinButton}
-          onPress={handleJoin}
-          loading={loading}
-          disabled={!name.trim()}
-        />
-      </View>
+          <Button
+            title={strings.joinButton}
+            onPress={handleJoin}
+            loading={loading}
+            disabled={!name.trim()}
+          />
+        </View>
+      </WebContainer>
     </SafeAreaView>
   );
 }

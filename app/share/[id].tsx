@@ -9,6 +9,7 @@ import { colors, fonts, spacing, radii } from '../../constants/theme';
 import { strings } from '../../constants/strings';
 import * as Clipboard from 'expo-clipboard';
 import { showAlert } from '../../lib/alert';
+import { WebContainer } from '../../components/WebContainer';
 
 export default function ShareScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,50 +36,52 @@ export default function ShareScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>{strings.shareTitle}</Text>
-        <Text style={styles.subtitle}>{strings.shareSubtitle}</Text>
+      <WebContainer>
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>{strings.shareTitle}</Text>
+          <Text style={styles.subtitle}>{strings.shareSubtitle}</Text>
 
-        {/* WhatsApp Preview */}
-        <View style={styles.whatsappPreview}>
-          <View style={styles.chatHeader}>
-            <Text style={styles.chatTitle}>WhatsApp Preview</Text>
-          </View>
-          <View style={styles.chatBody}>
-            <View style={styles.messageBubble}>
-              <Text style={styles.messageTitle}>{plan.title}</Text>
-              <Text style={styles.messageDesc}>Join our plan on Whodo! Everything from split-bills to tasks in one link.</Text>
-              <Text style={styles.messageLink}>{inviteLink}</Text>
+          {/* WhatsApp Preview */}
+          <View style={styles.whatsappPreview}>
+            <View style={styles.chatHeader}>
+              <Text style={styles.chatTitle}>WhatsApp Preview</Text>
+            </View>
+            <View style={styles.chatBody}>
+              <View style={styles.messageBubble}>
+                <Text style={styles.messageTitle}>{plan.title}</Text>
+                <Text style={styles.messageDesc}>Join our plan on Whodo! Everything from split-bills to tasks in one link.</Text>
+                <Text style={styles.messageLink}>{inviteLink}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Customize */}
-        <View style={styles.customSection}>
-          <Text style={styles.customTitle}>Customize Link</Text>
-          <View style={styles.customCard}>
-            <View style={styles.linkRow}>
-              <Text style={styles.linkLabel}>Invite Code</Text>
-              <Text style={styles.linkValue}>{plan.invite_code}</Text>
-            </View>
+          {/* Customize */}
+          <View style={styles.customSection}>
+            <Text style={styles.customTitle}>Customize Link</Text>
+            <View style={styles.customCard}>
+              <View style={styles.linkRow}>
+                <Text style={styles.linkLabel}>Invite Code</Text>
+                <Text style={styles.linkValue}>{plan.invite_code}</Text>
+              </View>
 
-            <View style={styles.buttonRow}>
-              <Button
-                title={strings.shareLink}
-                onPress={handleShare}
-                style={{ flex: 1 }}
-                icon={<Text style={{ color: '#fff', fontSize: 16 }}>↗</Text>}
-              />
-              <Button
-                title={copied ? '✓ Copied!' : strings.copyLink}
-                variant="secondary"
-                onPress={handleCopy}
-                style={{ flex: 1 }}
-              />
+              <View style={styles.buttonRow}>
+                <Button
+                  title={strings.shareLink}
+                  onPress={handleShare}
+                  style={{ flex: 1 }}
+                  icon={<Text style={{ color: '#fff', fontSize: 16 }}>↗</Text>}
+                />
+                <Button
+                  title={copied ? '✓ Copied!' : strings.copyLink}
+                  variant="secondary"
+                  onPress={handleCopy}
+                  style={{ flex: 1 }}
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </WebContainer>
     </SafeAreaView>
   );
 }

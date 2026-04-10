@@ -1,8 +1,9 @@
 import { Alert, Platform } from 'react-native';
+import { emitToast, emitConfirm } from './overlay-events';
 
 export function showAlert(title: string, message?: string) {
   if (Platform.OS === 'web') {
-    window.alert(message ? `${title}\n${message}` : title);
+    emitToast(title, message, 'info');
   } else {
     Alert.alert(title, message);
   }
@@ -16,9 +17,7 @@ export function showConfirm(
   cancelText = 'Cancel',
 ) {
   if (Platform.OS === 'web') {
-    if (window.confirm(`${title}\n${message}`)) {
-      onConfirm();
-    }
+    emitConfirm(title, message, onConfirm, confirmText, cancelText);
   } else {
     Alert.alert(title, message, [
       { text: cancelText, style: 'cancel' },

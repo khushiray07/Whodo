@@ -1,5 +1,6 @@
-import { Linking, Alert, Share, Platform } from 'react-native';
+import { Linking, Share, Platform } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import { showAlert } from './alert';
 
 const WEB_DOMAIN = 'https://whodo.space';
 
@@ -17,14 +18,6 @@ function openURL(url: string) {
     window.open(url, '_blank');
   } else {
     Linking.openURL(url);
-  }
-}
-
-function showAlert(title: string, message: string) {
-  if (Platform.OS === 'web') {
-    window.alert(`${title}\n${message}`);
-  } else {
-    Alert.alert(title, message);
   }
 }
 
@@ -77,9 +70,11 @@ export async function sendReminder(
   toName: string,
   amount: number,
   planTitle: string,
+  planId: string,
   phone?: string,
 ): Promise<boolean> {
-  const message = `Hey ${toName}! You owe ${fromName} ₹${amount} from "${planTitle}" on Whodo. Settle up kar! 💸`;
+  const planLink = `${WEB_DOMAIN}/plan/${planId}/settle`;
+  const message = `Hey ${toName}! You owe ${fromName} ₹${amount} from "${planTitle}" on Whodo. Settle up kar! 💸\n\n👉 ${planLink}`;
   const encoded = encodeURIComponent(message);
 
   if (Platform.OS === 'web') {

@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import { colors, fonts, spacing, radii } from '../constants/theme';
 import { strings } from '../constants/strings';
 import { showAlert } from '../lib/alert';
+import { WebContainer } from '../components/WebContainer';
 import type { Task } from '../types/database';
 
 export default function CreateTaskScreen() {
@@ -99,70 +100,72 @@ export default function CreateTaskScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-            <Text style={styles.closeText}>✕</Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerSub}>{isEditing ? 'Edit Task' : 'New Task'}</Text>
-            <Text style={styles.headerBrand}>{strings.appName}</Text>
+      <WebContainer>
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
+              <Text style={styles.closeText}>✕</Text>
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headerSub}>{isEditing ? 'Edit Task' : 'New Task'}</Text>
+              <Text style={styles.headerBrand}>{strings.appName}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Task Name */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Task Details</Text>
+          {/* Task Name */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Task Details</Text>
+            <Input
+              placeholder={strings.createTaskPlaceholder}
+              value={title}
+              onChangeText={setTitle}
+              style={styles.bigInput}
+            />
+          </View>
+
+          {/* Person Picker */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{strings.pickPerson}</Text>
+              <Text style={styles.sectionHint}>Choose One</Text>
+            </View>
+            <ParticipantPicker
+              participants={participants}
+              selectedId={selectedParticipant}
+              onSelect={(p) => setSelectedParticipant(p.id)}
+            />
+          </View>
+
+          {/* Deadline */}
+          <DatePicker
+            label={strings.deadline}
+            value={deadline}
+            onChange={setDeadline}
+            placeholder="Tap to pick a deadline"
+          />
+
+          {/* Expense */}
           <Input
-            placeholder={strings.createTaskPlaceholder}
-            value={title}
-            onChangeText={setTitle}
-            style={styles.bigInput}
+            label={strings.optionalKharcha + ' (₹)'}
+            placeholder="Enter amount (e.g. 500)"
+            value={expense}
+            onChangeText={setExpense}
+            keyboardType="numeric"
+          />
+        </ScrollView>
+
+        {/* Bottom CTA */}
+        <View style={styles.bottomCta}>
+          <Button
+            title={isEditing ? 'Save Changes' : 'Submit'}
+            onPress={handleSubmit}
+            loading={loading}
+            disabled={!title.trim()}
+            icon={<Text style={{ fontSize: 18, color: '#fff' }}>✓</Text>}
           />
         </View>
-
-        {/* Person Picker */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{strings.pickPerson}</Text>
-            <Text style={styles.sectionHint}>Choose One</Text>
-          </View>
-          <ParticipantPicker
-            participants={participants}
-            selectedId={selectedParticipant}
-            onSelect={(p) => setSelectedParticipant(p.id)}
-          />
-        </View>
-
-        {/* Deadline */}
-        <DatePicker
-          label={strings.deadline}
-          value={deadline}
-          onChange={setDeadline}
-          placeholder="Tap to pick a deadline"
-        />
-
-        {/* Expense */}
-        <Input
-          label={strings.optionalKharcha + ' (₹)'}
-          placeholder="Enter amount (e.g. 500)"
-          value={expense}
-          onChangeText={setExpense}
-          keyboardType="numeric"
-        />
-      </ScrollView>
-
-      {/* Bottom CTA */}
-      <View style={styles.bottomCta}>
-        <Button
-          title={isEditing ? 'Save Changes' : 'Submit'}
-          onPress={handleSubmit}
-          loading={loading}
-          disabled={!title.trim()}
-          icon={<Text style={{ fontSize: 18, color: '#fff' }}>✓</Text>}
-        />
-      </View>
+      </WebContainer>
     </SafeAreaView>
   );
 }
