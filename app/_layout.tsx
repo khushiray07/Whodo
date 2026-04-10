@@ -33,11 +33,17 @@ export default function RootLayout() {
     const inAuthGroup = segments[0] === '(auth)';
     const onLanding = segments[0] === 'landing';
     const onJoin = segments[0] === 'join';
+    const isDeepLink = segments[0] === 'plan' || segments[0] === 'share';
 
     if (!isAuthenticated && !inAuthGroup && !onLanding && !onJoin) {
-      // On web, show landing page; on native, go straight to login
       if (Platform.OS === 'web') {
-        router.replace('/landing');
+        if (isDeepLink) {
+          // Deep link: send to login with redirect back to the original path
+          const path = '/' + segments.join('/');
+          router.replace(`/(auth)/login?redirect=${encodeURIComponent(path)}`);
+        } else {
+          router.replace('/landing');
+        }
       } else {
         router.replace('/(auth)/login');
       }
