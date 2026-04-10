@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Slot, useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlan } from '../../../hooks/usePlan';
 import { supabase } from '../../../lib/supabase';
 import { WebContainer } from '../../../components/WebContainer';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
-import { showAlert, showConfirm } from '../../../lib/alert';
+import { showAlert, showConfirm, showActionSheet } from '../../../lib/alert';
 import type { PlanStatus } from '../../../types/database';
 
 const TABS = [
@@ -42,58 +42,33 @@ export default function PlanLayout() {
   };
 
   const handleStatusMenu = () => {
-    const options: { text: string; status: PlanStatus }[] = [];
+    const menuOptions: { text: string; onPress: () => void; destructive?: boolean }[] = [];
+
     if (plan?.status !== 'completed') {
-      options.push({ text: 'Mark as Completed', status: 'completed' });
+      menuOptions.push({
+        text: 'Mark as Completed',
+        onPress: () => updatePlan({ status: 'completed' }).catch(() => showAlert('Something went wrong!')),
+      });
     }
     if (plan?.status !== 'archived') {
-      options.push({ text: 'Archive Plan', status: 'archived' });
+      menuOptions.push({
+        text: 'Archive Plan',
+        onPress: () => updatePlan({ status: 'archived' }).catch(() => showAlert('Something went wrong!')),
+      });
     }
     if (plan?.status !== 'active') {
-      options.push({ text: 'Reactivate Plan', status: 'active' });
+      menuOptions.push({
+        text: 'Reactivate Plan',
+        onPress: () => updatePlan({ status: 'active' }).catch(() => showAlert('Something went wrong!')),
+      });
     }
+    menuOptions.push({
+      text: 'Delete Plan',
+      onPress: handleDeletePlan,
+      destructive: true,
+    });
 
-    if (Platform.OS === 'web') {
-      const choices = [
-        ...options.map((opt) => opt.text),
-        'Delete Plan',
-        'Cancel',
-      ];
-      const choice = window.prompt(
-        `Plan Options\nCurrent status: ${plan?.status ?? 'active'}\n\n${choices.map((c, i) => `${i + 1}. ${c}`).join('\n')}\n\nEnter a number:`,
-      );
-      const index = choice ? parseInt(choice, 10) - 1 : -1;
-      if (index >= 0 && index < options.length) {
-        updatePlan({ status: options[index].status }).catch(() => {
-          showAlert('Something went wrong!');
-        });
-      } else if (index === options.length) {
-        handleDeletePlan();
-      }
-    } else {
-      Alert.alert(
-        'Plan Options',
-        `Current status: ${plan?.status ?? 'active'}`,
-        [
-          ...options.map((opt) => ({
-            text: opt.text,
-            onPress: async () => {
-              try {
-                await updatePlan({ status: opt.status });
-              } catch {
-                showAlert('Something went wrong!');
-              }
-            },
-          })),
-          {
-            text: 'Delete Plan',
-            style: 'destructive' as const,
-            onPress: handleDeletePlan,
-          },
-          { text: 'Cancel', style: 'cancel' as const },
-        ],
-      );
-    }
+    showActionSheet('Plan Options', menuOptions, `Status: ${plan?.status ?? 'active'}`);
   };
 
   return (

@@ -10,6 +10,7 @@ import { registerForPushNotifications } from '../lib/push';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Toast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { ActionSheet } from '../components/ActionSheet';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -84,6 +85,7 @@ export default function RootLayout() {
       </Stack>
       <Toast />
       <ConfirmModal />
+      <ActionSheet />
     </ErrorBoundary>
   );
 }

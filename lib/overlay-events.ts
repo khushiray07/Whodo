@@ -47,4 +47,30 @@ export function onConfirm(handler: Handler<ConfirmEvent>): () => void {
   return () => { confirmHandlers.delete(handler); };
 }
 
-export type { ToastEvent, ConfirmEvent };
+// Action sheet
+type ActionSheetOption = {
+  text: string;
+  onPress: () => void;
+  destructive?: boolean;
+};
+
+type ActionSheetEvent = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  options: ActionSheetOption[];
+};
+
+const actionSheetHandlers = new Set<Handler<ActionSheetEvent>>();
+
+export function emitActionSheet(title: string, options: ActionSheetOption[], subtitle?: string) {
+  const event: ActionSheetEvent = { id: String(++counter), title, subtitle, options };
+  actionSheetHandlers.forEach((h) => h(event));
+}
+
+export function onActionSheet(handler: Handler<ActionSheetEvent>): () => void {
+  actionSheetHandlers.add(handler);
+  return () => { actionSheetHandlers.delete(handler); };
+}
+
+export type { ToastEvent, ConfirmEvent, ActionSheetEvent, ActionSheetOption };
