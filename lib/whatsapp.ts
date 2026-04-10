@@ -1,15 +1,15 @@
 import { Linking, Alert, Share, Platform } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 
+const WEB_DOMAIN = 'https://whodo.space';
+
 export function buildInviteLink(inviteCode: string): string {
-  if (Platform.OS === 'web') {
-    return `${window.location.origin}/join/${inviteCode}`;
-  }
-  return `whodo://join/${inviteCode}`;
+  return `${WEB_DOMAIN}/join/${inviteCode}`;
 }
 
 export function buildInviteMessage(planTitle: string, inviteCode: string): string {
-  return `Join "${planTitle}" on Whodo! 🎯\n\nOpen: ${buildInviteLink(inviteCode)}\n\nCode: ${inviteCode}`;
+  const link = buildInviteLink(inviteCode);
+  return `Join "${planTitle}" on Whodo! 🎯\n\n👉 ${link}\n\nOr use code: ${inviteCode}`;
 }
 
 function openURL(url: string) {
@@ -33,10 +33,13 @@ export async function shareViaWhatsApp(planTitle: string, inviteCode: string): P
   const encoded = encodeURIComponent(message);
 
   if (Platform.OS === 'web') {
-    // On web, use wa.me link or navigator.share
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Join "${planTitle}" on Whodo`, text: message, url: buildInviteLink(inviteCode) });
+        await navigator.share({
+          title: `Join "${planTitle}" on Whodo`,
+          text: message,
+          url: buildInviteLink(inviteCode),
+        });
         return true;
       } catch {}
     }
@@ -73,9 +76,10 @@ export async function sendReminder(
   fromName: string,
   toName: string,
   amount: number,
+  planTitle: string,
   phone?: string,
 ): Promise<boolean> {
-  const message = `Hey ${toName}! You owe ${fromName} ₹${amount} on Whodo. Settle up kar! 💸`;
+  const message = `Hey ${toName}! You owe ${fromName} ₹${amount} from "${planTitle}" on Whodo. Settle up kar! 💸`;
   const encoded = encodeURIComponent(message);
 
   if (Platform.OS === 'web') {
@@ -84,7 +88,6 @@ export async function sendReminder(
     return true;
   }
 
-  // Native: try with phone number first
   if (phone) {
     try {
       await Linking.openURL(`https://wa.me/${phone}?text=${encoded}`);

@@ -85,6 +85,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 40,
     elevation: 8,
+    ...(Platform.OS === 'web' ? {
+      maxWidth: 480,
+      alignSelf: 'center' as const,
+      left: '50%' as unknown as number,
+      transform: [{ translateX: -240 }],
+      borderRadius: 24,
+      bottom: 12,
+    } : {}),
   },
   tabItem: {
     alignItems: 'center',

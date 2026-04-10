@@ -6,6 +6,7 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { useTasks } from '../../../hooks/useTasks';
 import { useParticipants } from '../../../hooks/useParticipants';
 import { useSettlement } from '../../../hooks/useSettlement';
+import { usePlan } from '../../../hooks/usePlan';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
 import { strings } from '../../../constants/strings';
 
@@ -15,6 +16,7 @@ function formatAmount(n: number): string {
 
 export default function SettleTab() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { plan } = usePlan(id);
   const { tasks, loading, fetchTasks } = useTasks(id);
   const { participants, getMyParticipant } = useParticipants(id);
   const { settlements, totalSpent } = useSettlement(tasks, participants);
@@ -72,7 +74,7 @@ export default function SettleTab() {
       <Text style={styles.sectionLabel}>{strings.smartSettlements}</Text>
       <View style={styles.list}>
         {settlements.map((s, i) => (
-          <SettlementCard key={`${s.from.id}-${s.to.id}-${i}`} settlement={s} />
+          <SettlementCard key={`${s.from.id}-${s.to.id}-${i}`} settlement={s} planTitle={plan?.title} />
         ))}
       </View>
 

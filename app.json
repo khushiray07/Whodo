@@ -23,7 +23,8 @@
       "bundleIdentifier": "app.whodo",
       "infoPlist": {
         "LSApplicationQueriesSchemes": ["whatsapp"]
-      }
+      },
+      "associatedDomains": ["applinks:whodo.space"]
     },
     "android": {
       "adaptiveIcon": {
@@ -37,6 +38,14 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [{ "scheme": "whodo", "host": "join" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "whodo.space", "pathPrefix": "/join" }
+          ],
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ]

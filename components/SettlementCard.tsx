@@ -9,14 +9,16 @@ import { sendReminder } from '../lib/whatsapp';
 
 type Props = {
   settlement: Settlement;
+  planTitle?: string;
 };
 
-export function SettlementCard({ settlement }: Props) {
+export function SettlementCard({ settlement, planTitle = 'a plan' }: Props) {
   const handleRemind = async () => {
     await sendReminder(
       settlement.to.name,
       settlement.from.name,
       settlement.amount,
+      planTitle,
     );
   };
 
