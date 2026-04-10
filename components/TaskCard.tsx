@@ -14,10 +14,11 @@ type Props = {
   onClaim?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onRemind?: () => void;
   completed?: boolean;
 };
 
-export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, completed }: Props) {
+export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, onRemind, completed }: Props) {
   if (completed) {
     return (
       <TouchableOpacity onPress={onEdit} activeOpacity={0.8} style={styles.completedContainer}>
@@ -89,15 +90,22 @@ export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, co
             <Text style={styles.expenseText}>₹{task.expense_amount.toLocaleString('en-IN')}</Text>
           </View>
         )}
-        {onDone && (
-          <Button
-            title={strings.doneKarButton}
-            variant="secondary"
-            onPress={onDone}
-            style={styles.doneButton}
-            textStyle={{ fontSize: 13 }}
-          />
-        )}
+        <View style={styles.actionRow}>
+          {onRemind && assignee && (
+            <TouchableOpacity onPress={onRemind} style={styles.remindButton}>
+              <Text style={styles.remindText}>🔔 Remind</Text>
+            </TouchableOpacity>
+          )}
+          {onDone && (
+            <Button
+              title={strings.doneKarButton}
+              variant="secondary"
+              onPress={onDone}
+              style={styles.doneButton}
+              textStyle={{ fontSize: 13 }}
+            />
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -190,6 +198,24 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headlineSemiBold,
     fontSize: 12,
     color: colors.onSecondaryContainer,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  remindButton: {
+    backgroundColor: colors.primary + '12',
+    borderRadius: radii.full,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    height: 40,
+    justifyContent: 'center',
+  },
+  remindText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 12,
+    color: colors.primary,
   },
   doneButton: {
     height: 40,

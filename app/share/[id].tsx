@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
@@ -38,6 +38,9 @@ export default function ShareScreen() {
     <SafeAreaView style={styles.safe}>
       <WebContainer>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} style={styles.backBtn}>
+            <Text style={styles.backText}>← Back</Text>
+          </TouchableOpacity>
           <Text style={styles.title}>{strings.shareTitle}</Text>
           <Text style={styles.subtitle}>{strings.shareSubtitle}</Text>
 
@@ -95,6 +98,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: 40,
     gap: 20,
+  },
+  backBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+  },
+  backText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 15,
+    color: colors.primary,
   },
   title: {
     fontFamily: fonts.headlineExtra,

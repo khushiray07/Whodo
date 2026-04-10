@@ -108,3 +108,37 @@ export async function sendReminder(
   showAlert('Message copied!', 'Reminder copied to clipboard.');
   return false;
 }
+
+export async function sendTaskReminder(
+  assigneeName: string,
+  taskTitle: string,
+  planTitle: string,
+  planId: string,
+): Promise<boolean> {
+  const planLink = `${WEB_DOMAIN}/plan/${planId}`;
+  const message = `Hey ${assigneeName}! Reminder: "${taskTitle}" is still pending in "${planTitle}" on Whodo. Kar de yaar! 🙏\n\n👉 ${planLink}`;
+  const encoded = encodeURIComponent(message);
+
+  if (Platform.OS === 'web') {
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    return true;
+  }
+
+  const whatsappUrl = `whatsapp://send?text=${encoded}`;
+  try {
+    const canOpen = await Linking.canOpenURL(whatsappUrl);
+    if (canOpen) {
+      await Linking.openURL(whatsappUrl);
+      return true;
+    }
+  } catch {}
+
+  try {
+    await Share.share({ message });
+    return true;
+  } catch {}
+
+  await Clipboard.setStringAsync(message);
+  showAlert('Reminder copied!', 'Message copied to clipboard.');
+  return false;
+}

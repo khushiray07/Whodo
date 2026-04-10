@@ -15,6 +15,7 @@ import { colors, fonts, spacing, shadows } from '../../../constants/theme';
 import { strings } from '../../../constants/strings';
 import { ParticipantModal } from '../../../components/ParticipantModal';
 import { showAlert, showConfirm } from '../../../lib/alert';
+import { sendTaskReminder } from '../../../lib/whatsapp';
 import type { ParsedTask } from '../../../lib/smart-parse';
 import type { Participant } from '../../../types/database';
 
@@ -153,6 +154,10 @@ export default function TasksTab() {
                 onDone={() => handleDone(task.id)}
                 onClaim={() => handleClaim(task.id)}
                 onEdit={() => router.push({ pathname: '/create-task', params: { planId: id, taskId: task.id } })}
+                onRemind={() => {
+                  const a = task.assigned_to ? participantMap.get(task.assigned_to) : null;
+                  if (a && plan) sendTaskReminder(a.name, task.title, plan.title, plan.id);
+                }}
                 onDelete={() => handleDelete(task.id, task.title)}
               />
             ))}
