@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, TextInput, Modal, Pressable, Platform } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -74,12 +74,20 @@ export default function HomeScreen() {
         <Text style={styles.tagline}>{strings.tagline}</Text>
 
         {/* Join with Code */}
-        {showJoinInput ? (
-          <View style={styles.joinSection}>
-            <View style={styles.joinRow}>
+        <TouchableOpacity style={styles.joinButton} onPress={() => setShowJoinInput(true)}>
+          <Text style={styles.joinButtonIcon}>🔗</Text>
+          <Text style={styles.joinButtonText}>Join a plan with invite code</Text>
+        </TouchableOpacity>
+
+        {/* Join Modal */}
+        <Modal transparent visible={showJoinInput} animationType="fade" onRequestClose={() => setShowJoinInput(false)}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setShowJoinInput(false)}>
+            <Pressable style={styles.modalCard} onPress={(e) => e.stopPropagation()}>
+              <Text style={styles.modalTitle}>Join a Plan</Text>
+              <Text style={styles.modalSubtitle}>Enter the invite code shared with you</Text>
               <TextInput
-                style={styles.joinInput}
-                placeholder="Enter invite code"
+                style={styles.modalInput}
+                placeholder="e.g. AB3K9XYZ"
                 placeholderTextColor={colors.outlineVariant}
                 value={joinCode}
                 onChangeText={setJoinCode}
@@ -87,21 +95,26 @@ export default function HomeScreen() {
                 autoFocus
                 onSubmitEditing={handleJoinWithCode}
                 returnKeyType="go"
+                maxLength={8}
               />
-              <TouchableOpacity onPress={handleJoinWithCode} style={styles.joinGoBtn}>
-                <Text style={styles.joinGoText}>Join</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowJoinInput(false)}>
-                <Text style={styles.joinCancel}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <TouchableOpacity style={styles.joinButton} onPress={() => setShowJoinInput(true)}>
-            <Text style={styles.joinButtonIcon}>🔗</Text>
-            <Text style={styles.joinButtonText}>Join a plan with invite code</Text>
-          </TouchableOpacity>
-        )}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  onPress={() => { setShowJoinInput(false); setJoinCode(''); }}
+                  style={styles.modalCancelBtn}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleJoinWithCode}
+                  style={[styles.modalJoinBtn, !joinCode.trim() && { opacity: 0.5 }]}
+                  disabled={!joinCode.trim()}
+                >
+                  <Text style={styles.modalJoinText}>Join →</Text>
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
 
         {/* Active Plans */}
         {plans.length > 0 && (
@@ -285,41 +298,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.primary,
   },
-  joinSection: {
-    marginTop: spacing.md,
-    marginHorizontal: spacing.lg,
-  },
-  joinRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  joinInput: {
+  modalBackdrop: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerHigh,
-    borderRadius: radii.default,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#ffffff',
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 10,
+  },
+  modalTitle: {
     fontFamily: fonts.headlineExtra,
-    fontSize: 16,
+    fontSize: 22,
     color: colors.onSurface,
-    letterSpacing: 2,
+    textAlign: 'center',
   },
-  joinGoBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.full,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-  },
-  joinGoText: {
-    fontFamily: fonts.headlineSemiBold,
-    fontSize: 14,
-    color: colors.onPrimary,
-  },
-  joinCancel: {
-    fontFamily: fonts.bodyMedium,
+  modalSubtitle: {
+    fontFamily: fonts.body,
     fontSize: 14,
     color: colors.onSurfaceVariant,
-    paddingHorizontal: 8,
+    textAlign: 'center',
+    marginTop: -8,
+  },
+  modalInput: {
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: radii.default,
+    borderWidth: 2,
+    borderColor: colors.primary + '30',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    fontFamily: fonts.headlineExtra,
+    fontSize: 22,
+    color: colors.onSurface,
+    letterSpacing: 4,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: radii.default,
+    backgroundColor: colors.surfaceContainer,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 15,
+    color: colors.onSurfaceVariant,
+  },
+  modalJoinBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: radii.default,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+  },
+  modalJoinText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 15,
+    color: '#ffffff',
   },
 });

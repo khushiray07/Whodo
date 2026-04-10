@@ -87,9 +87,9 @@ const styles = StyleSheet.create({
     elevation: 8,
     ...(Platform.OS === 'web' ? {
       maxWidth: 480,
-      alignSelf: 'center' as const,
-      left: '50%' as unknown as number,
-      transform: [{ translateX: -240 }],
+      left: 0,
+      right: 0,
+      marginHorizontal: 'auto' as any,
       borderRadius: 24,
       bottom: 12,
     } : {}),

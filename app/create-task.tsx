@@ -90,7 +90,7 @@ export default function CreateTaskScreen() {
           expenseNum && expenseNum > 0 ? (selectedParticipant ?? myParticipant.id) : undefined,
         );
       }
-      router.back();
+      router.canGoBack() ? router.back() : router.replace('/(tabs)');
     } catch (e: any) {
       showAlert(strings.genericError, e.message);
     } finally {
@@ -104,7 +104,7 @@ export default function CreateTaskScreen() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
+            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} style={styles.closeBtn}>
               <Text style={styles.closeText}>✕</Text>
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
