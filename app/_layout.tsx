@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
@@ -28,10 +29,17 @@ export default function RootLayout() {
     if (loading || !fontsLoaded) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const onLanding = segments[0] === 'landing';
+    const onJoin = segments[0] === 'join';
 
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
+    if (!isAuthenticated && !inAuthGroup && !onLanding && !onJoin) {
+      // On web, show landing page; on native, go straight to login
+      if (Platform.OS === 'web') {
+        router.replace('/landing');
+      } else {
+        router.replace('/(auth)/login');
+      }
+    } else if (isAuthenticated && (inAuthGroup || onLanding)) {
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, loading, segments, fontsLoaded]);
@@ -57,6 +65,7 @@ export default function RootLayout() {
           animation: 'slide_from_right',
         }}
       >
+        <Stack.Screen name="landing" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="create-plan" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
