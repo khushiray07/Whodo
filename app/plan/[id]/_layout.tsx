@@ -4,6 +4,7 @@ import { Slot, useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlan } from '../../../hooks/usePlan';
 import { supabase } from '../../../lib/supabase';
+import { WebContainer } from '../../../components/WebContainer';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
 import { showAlert, showConfirm } from '../../../lib/alert';
 import type { PlanStatus } from '../../../types/database';
@@ -97,6 +98,7 @@ export default function PlanLayout() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+     <WebContainer>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -151,6 +153,7 @@ export default function PlanLayout() {
       </View>
 
       <Slot />
+     </WebContainer>
     </SafeAreaView>
   );
 }

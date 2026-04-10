@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { colors, fonts } from '../../constants/theme';
 import { useNotifications } from '../../hooks/useNotifications';
 
@@ -29,6 +29,9 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: false,
+        ...(Platform.OS === 'web' ? {
+          sceneStyle: { maxWidth: 480, alignSelf: 'center', width: '100%' },
+        } : {}),
       }}
     >
       <Tabs.Screen

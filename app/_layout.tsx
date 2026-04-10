@@ -8,6 +8,7 @@ import { colors } from '../constants/theme';
 import { useAuth } from '../hooks/useAuth';
 import { registerForPushNotifications } from '../lib/push';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { WebContainer } from '../components/WebContainer';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
