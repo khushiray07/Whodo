@@ -54,6 +54,7 @@
       "expo-router",
       "expo-font",
       "expo-secure-store",
+      "expo-image-picker",
       [
         "expo-notifications",
         { "icon": "./AppIcons/appstore.png", "color": "#6b1ef3" }
