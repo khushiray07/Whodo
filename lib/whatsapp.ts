@@ -2,20 +2,50 @@ import { Linking, Alert, Share, Platform } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 
 export function buildInviteLink(inviteCode: string): string {
+  if (Platform.OS === 'web') {
+    return `${window.location.origin}/join/${inviteCode}`;
+  }
   return `whodo://join/${inviteCode}`;
 }
 
 export function buildInviteMessage(planTitle: string, inviteCode: string): string {
-  return `Join "${planTitle}" on Whodo! 🎯\n\nOpen in app: ${buildInviteLink(inviteCode)}\n\nOr use invite code: ${inviteCode}`;
+  return `Join "${planTitle}" on Whodo! 🎯\n\nOpen: ${buildInviteLink(inviteCode)}\n\nCode: ${inviteCode}`;
+}
+
+function openURL(url: string) {
+  if (Platform.OS === 'web') {
+    window.open(url, '_blank');
+  } else {
+    Linking.openURL(url);
+  }
+}
+
+function showAlert(title: string, message: string) {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
 }
 
 export async function shareViaWhatsApp(planTitle: string, inviteCode: string): Promise<boolean> {
   const message = buildInviteMessage(planTitle, inviteCode);
   const encoded = encodeURIComponent(message);
 
-  // Try whatsapp:// scheme first — this reliably opens WhatsApp
-  const whatsappUrl = `whatsapp://send?text=${encoded}`;
+  if (Platform.OS === 'web') {
+    // On web, use wa.me link or navigator.share
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Join "${planTitle}" on Whodo`, text: message, url: buildInviteLink(inviteCode) });
+        return true;
+      } catch {}
+    }
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    return true;
+  }
 
+  // Native: try whatsapp:// scheme first
+  const whatsappUrl = `whatsapp://send?text=${encoded}`;
   try {
     const canOpen = await Linking.canOpenURL(whatsappUrl);
     if (canOpen) {
@@ -24,7 +54,7 @@ export async function shareViaWhatsApp(planTitle: string, inviteCode: string): P
     }
   } catch {}
 
-  // Fallback: native share sheet (works even without WhatsApp)
+  // Fallback: native share sheet
   try {
     await Share.share({
       message,
@@ -35,7 +65,7 @@ export async function shareViaWhatsApp(planTitle: string, inviteCode: string): P
 
   // Last resort: clipboard
   await Clipboard.setStringAsync(message);
-  Alert.alert('Link copied!', 'Message copied to clipboard. Share it with your group!');
+  showAlert('Link copied!', 'Message copied to clipboard. Share it with your group!');
   return false;
 }
 
@@ -48,16 +78,20 @@ export async function sendReminder(
   const message = `Hey ${toName}! You owe ${fromName} ₹${amount} on Whodo. Settle up kar! 💸`;
   const encoded = encodeURIComponent(message);
 
-  // If we have a phone number, use wa.me with the number
+  if (Platform.OS === 'web') {
+    const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+    window.open(url, '_blank');
+    return true;
+  }
+
+  // Native: try with phone number first
   if (phone) {
-    const url = `https://wa.me/${phone}?text=${encoded}`;
     try {
-      await Linking.openURL(url);
+      await Linking.openURL(`https://wa.me/${phone}?text=${encoded}`);
       return true;
     } catch {}
   }
 
-  // No phone — try whatsapp:// scheme
   const whatsappUrl = `whatsapp://send?text=${encoded}`;
   try {
     const canOpen = await Linking.canOpenURL(whatsappUrl);
@@ -67,14 +101,12 @@ export async function sendReminder(
     }
   } catch {}
 
-  // Fallback: native share sheet
   try {
     await Share.share({ message });
     return true;
   } catch {}
 
-  // Last resort: clipboard
   await Clipboard.setStringAsync(message);
-  Alert.alert('Message copied!', 'Reminder copied to clipboard.');
+  showAlert('Message copied!', 'Reminder copied to clipboard.');
   return false;
 }

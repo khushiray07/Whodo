@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { TaskCard } from '../../../components/TaskCard';
@@ -11,6 +11,7 @@ import { useTasks } from '../../../hooks/useTasks';
 import { useParticipants } from '../../../hooks/useParticipants';
 import { colors, fonts, spacing, shadows } from '../../../constants/theme';
 import { strings } from '../../../constants/strings';
+import { showAlert, showConfirm } from '../../../lib/alert';
 import type { ParsedTask } from '../../../lib/smart-parse';
 
 export default function TasksTab() {
@@ -27,13 +28,13 @@ export default function TasksTab() {
 
   const handleClaim = async (taskId: string) => {
     if (!myParticipant) {
-      Alert.alert('Not a participant', 'Join this plan first.');
+      showAlert('Not a participant', 'Join this plan first.');
       return;
     }
     try {
       await claimTask(taskId, myParticipant.id);
     } catch {
-      Alert.alert('Already claimed!');
+      showAlert('Already claimed!');
     }
   };
 
@@ -41,29 +42,23 @@ export default function TasksTab() {
     try {
       await completeTask(taskId);
     } catch {
-      Alert.alert(strings.genericError);
+      showAlert(strings.genericError);
     }
   };
 
   const handleDelete = (taskId: string, title: string) => {
-    Alert.alert(
+    showConfirm(
       'Delete Task',
       `Are you sure you want to delete "${title}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTask(taskId);
-              fetchTasks();
-            } catch {
-              Alert.alert(strings.genericError);
-            }
-          },
-        },
-      ],
+      async () => {
+        try {
+          await deleteTask(taskId);
+          fetchTasks();
+        } catch {
+          showAlert(strings.genericError);
+        }
+      },
+      'Delete',
     );
   };
 
@@ -71,7 +66,7 @@ export default function TasksTab() {
 
   const handleSmartAdd = async (parsed: ParsedTask) => {
     if (!myParticipant) {
-      Alert.alert('Not a participant', 'Join this plan first.');
+      showAlert('Not a participant', 'Join this plan first.');
       return;
     }
     await createTask(
@@ -86,24 +81,18 @@ export default function TasksTab() {
   };
 
   const handleRemoveParticipant = (participantId: string, name: string) => {
-    Alert.alert(
+    showConfirm(
       'Remove Participant',
       `Remove ${name} from this plan?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removeParticipant(participantId);
-              fetchParticipants();
-            } catch {
-              Alert.alert(strings.genericError);
-            }
-          },
-        },
-      ],
+      async () => {
+        try {
+          await removeParticipant(participantId);
+          fetchParticipants();
+        } catch {
+          showAlert(strings.genericError);
+        }
+      },
+      'Remove',
     );
   };
 

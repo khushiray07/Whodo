@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput } from 'react-native';
 import { format } from 'date-fns';
 import { colors, fonts, radii, spacing } from '../../constants/theme';
 
@@ -14,6 +13,26 @@ type Props = {
 export function DatePicker({ label, value, onChange, placeholder = 'Select date' }: Props) {
   const [show, setShow] = useState(false);
 
+  // Web: use HTML date input
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.container}>
+        {label && <Text style={styles.label}>{label}</Text>}
+        <TextInput
+          style={[styles.button, styles.text]}
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          placeholderTextColor={colors.outlineVariant}
+          // @ts-ignore - web-only prop
+          type="date"
+        />
+      </View>
+    );
+  }
+
+  // Native: use DateTimePicker
+  const DateTimePicker = require('@react-native-community/datetimepicker').default;
   const dateValue = value ? new Date(value + 'T00:00:00') : new Date();
 
   const handleChange = (_: any, selectedDate?: Date) => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
@@ -8,6 +8,7 @@ import { shareViaWhatsApp, buildInviteMessage, buildInviteLink } from '../../lib
 import { colors, fonts, spacing, radii } from '../../constants/theme';
 import { strings } from '../../constants/strings';
 import * as Clipboard from 'expo-clipboard';
+import { showAlert } from '../../lib/alert';
 
 export default function ShareScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +23,7 @@ export default function ShareScreen() {
   const handleShare = async () => {
     const opened = await shareViaWhatsApp(plan.title, plan.invite_code);
     if (!opened) {
-      Alert.alert(strings.copiedToClipboard, 'WhatsApp not found. Link copied to clipboard.');
+      showAlert(strings.copiedToClipboard, 'WhatsApp not found. Link copied to clipboard.');
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { parseTaskInput, ParsedTask } from '../lib/smart-parse';
+import { showAlert } from '../lib/alert';
 import { colors, fonts, radii } from '../constants/theme';
 import type { Participant } from '../types/database';
 
@@ -25,7 +26,7 @@ export function SmartTaskInput({ participants, onSubmit }: Props) {
       await onSubmit(parsed);
       setText('');
     } catch (e: any) {
-      Alert.alert('Error', e.message);
+      showAlert('Error', e.message);
     } finally {
       setLoading(false);
     }

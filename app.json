@@ -13,6 +13,11 @@
       "resizeMode": "contain",
       "backgroundColor": "#f6f6fc"
     },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./AppIcons/appstore.png"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "app.whodo",

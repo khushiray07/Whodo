@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { Slot, useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlan } from '../../../hooks/usePlan';
 import { supabase } from '../../../lib/supabase';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
+import { showAlert, showConfirm } from '../../../lib/alert';
 import type { PlanStatus } from '../../../types/database';
 
 const TABS = [
@@ -18,6 +19,27 @@ export default function PlanLayout() {
   const { plan, updatePlan } = usePlan(id);
   const [activeTab, setActiveTab] = useState<string>('index');
 
+  const handleDeletePlan = () => {
+    showConfirm(
+      'Delete Plan?',
+      'This will permanently delete this plan, all tasks, expenses, and participants. This cannot be undone.',
+      async () => {
+        try {
+          await supabase.from('activity_log').delete().eq('plan_id', id);
+          await supabase.from('tasks').delete().eq('plan_id', id);
+          await supabase.from('participants').delete().eq('plan_id', id);
+          await supabase.from('notifications').delete().eq('plan_id', id);
+          const { error } = await supabase.from('plans').delete().eq('id', id);
+          if (error) throw error;
+          router.replace('/(tabs)');
+        } catch {
+          showAlert('Could not delete plan');
+        }
+      },
+      'Delete',
+    );
+  };
+
   const handleStatusMenu = () => {
     const options: { text: string; status: PlanStatus }[] = [];
     if (plan?.status !== 'completed') {
@@ -30,53 +52,47 @@ export default function PlanLayout() {
       options.push({ text: 'Reactivate Plan', status: 'active' });
     }
 
-    Alert.alert(
-      'Plan Options',
-      `Current status: ${plan?.status ?? 'active'}`,
-      [
-        ...options.map((opt) => ({
-          text: opt.text,
-          onPress: async () => {
-            try {
-              await updatePlan({ status: opt.status });
-            } catch {
-              Alert.alert('Something went wrong!');
-            }
+    if (Platform.OS === 'web') {
+      const choices = [
+        ...options.map((opt) => opt.text),
+        'Delete Plan',
+        'Cancel',
+      ];
+      const choice = window.prompt(
+        `Plan Options\nCurrent status: ${plan?.status ?? 'active'}\n\n${choices.map((c, i) => `${i + 1}. ${c}`).join('\n')}\n\nEnter a number:`,
+      );
+      const index = choice ? parseInt(choice, 10) - 1 : -1;
+      if (index >= 0 && index < options.length) {
+        updatePlan({ status: options[index].status }).catch(() => {
+          showAlert('Something went wrong!');
+        });
+      } else if (index === options.length) {
+        handleDeletePlan();
+      }
+    } else {
+      Alert.alert(
+        'Plan Options',
+        `Current status: ${plan?.status ?? 'active'}`,
+        [
+          ...options.map((opt) => ({
+            text: opt.text,
+            onPress: async () => {
+              try {
+                await updatePlan({ status: opt.status });
+              } catch {
+                showAlert('Something went wrong!');
+              }
+            },
+          })),
+          {
+            text: 'Delete Plan',
+            style: 'destructive' as const,
+            onPress: handleDeletePlan,
           },
-        })),
-        {
-          text: 'Delete Plan',
-          style: 'destructive' as const,
-          onPress: () => {
-            Alert.alert(
-              'Delete Plan?',
-              'This will permanently delete this plan, all tasks, expenses, and participants. This cannot be undone.',
-              [
-                { text: 'Cancel', style: 'cancel' as const },
-                {
-                  text: 'Delete',
-                  style: 'destructive' as const,
-                  onPress: async () => {
-                    try {
-                      await supabase.from('activity_log').delete().eq('plan_id', id);
-                      await supabase.from('tasks').delete().eq('plan_id', id);
-                      await supabase.from('participants').delete().eq('plan_id', id);
-                      await supabase.from('notifications').delete().eq('plan_id', id);
-                      const { error } = await supabase.from('plans').delete().eq('id', id);
-                      if (error) throw error;
-                      router.replace('/(tabs)');
-                    } catch {
-                      Alert.alert('Could not delete plan');
-                    }
-                  },
-                },
-              ],
-            );
-          },
-        },
-        { text: 'Cancel', style: 'cancel' as const },
-      ],
-    );
+          { text: 'Cancel', style: 'cancel' as const },
+        ],
+      );
+    }
   };
 
   return (

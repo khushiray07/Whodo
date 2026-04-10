@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../components/ui/Input';
@@ -11,6 +11,7 @@ import { useTasks } from '../hooks/useTasks';
 import { supabase } from '../lib/supabase';
 import { colors, fonts, spacing, radii } from '../constants/theme';
 import { strings } from '../constants/strings';
+import { showAlert } from '../lib/alert';
 import type { Task } from '../types/database';
 
 export default function CreateTaskScreen() {
@@ -50,11 +51,11 @@ export default function CreateTaskScreen() {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert('Task name required');
+      showAlert('Task name required');
       return;
     }
     if (!myParticipant) {
-      Alert.alert('Error', 'You must be a participant in this plan.');
+      showAlert('Error', 'You must be a participant in this plan.');
       return;
     }
     setLoading(true);
@@ -90,7 +91,7 @@ export default function CreateTaskScreen() {
       }
       router.back();
     } catch (e: any) {
-      Alert.alert(strings.genericError, e.message);
+      showAlert(strings.genericError, e.message);
     } finally {
       setLoading(false);
     }

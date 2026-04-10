@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../../components/ui/Input';
@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { assignColor } from '../../lib/colors';
 import { colors, fonts, spacing, radii } from '../../constants/theme';
 import { strings } from '../../constants/strings';
+import { showAlert } from '../../lib/alert';
 
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -80,7 +81,7 @@ export default function JoinScreen() {
 
       router.replace(`/plan/${planId}`);
     } catch (e: any) {
-      Alert.alert(strings.genericError, e.message);
+      showAlert(strings.genericError, e.message);
     } finally {
       setLoading(false);
     }

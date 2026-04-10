@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/ui/Avatar';
@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/Input';
 import { useAuth } from '../../hooks/useAuth';
 import { colors, fonts, spacing, radii } from '../../constants/theme';
 import { strings } from '../../constants/strings';
+import { showConfirm } from '../../lib/alert';
 
 export default function ProfileScreen() {
   const { profile, isAuthenticated, logout, createProfile, updateProfile } = useAuth();
@@ -95,10 +96,7 @@ export default function ProfileScreen() {
             title={strings.logout}
             variant="ghost"
             onPress={() => {
-              Alert.alert('Logout', 'Are you sure?', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Logout', style: 'destructive', onPress: logout },
-              ]);
+              showConfirm('Logout', 'Are you sure?', logout, 'Logout');
             }}
           />
         </View>

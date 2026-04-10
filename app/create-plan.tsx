@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../components/ui/Input';
@@ -13,6 +13,7 @@ import { templates } from '../lib/templates';
 import { assignColor } from '../lib/colors';
 import { colors, fonts, spacing, radii } from '../constants/theme';
 import { strings } from '../constants/strings';
+import { showAlert } from '../lib/alert';
 import type { PlanTemplate } from '../types/database';
 
 export default function CreatePlanScreen() {
@@ -43,7 +44,7 @@ export default function CreatePlanScreen() {
 
   const handleCreate = async () => {
     if (!title.trim()) {
-      Alert.alert('Plan name required');
+      showAlert('Plan name required');
       return;
     }
     setLoading(true);
@@ -56,7 +57,7 @@ export default function CreatePlanScreen() {
       );
       router.replace(`/plan/${plan.id}`);
     } catch (e: any) {
-      Alert.alert(strings.genericError, e.message);
+      showAlert(strings.genericError, e.message);
     } finally {
       setLoading(false);
     }
