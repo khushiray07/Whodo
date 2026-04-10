@@ -114,5 +114,16 @@ export function usePlans() {
     return plan;
   }, []);
 
-  return { plans, loading, fetchPlans, createPlan };
+  const deletePlan = useCallback(async (planId: string) => {
+    // Delete in order: activity_log, tasks, participants, notifications, then plan
+    await supabase.from('activity_log').delete().eq('plan_id', planId);
+    await supabase.from('tasks').delete().eq('plan_id', planId);
+    await supabase.from('participants').delete().eq('plan_id', planId);
+    await supabase.from('notifications').delete().eq('plan_id', planId);
+    const { error } = await supabase.from('plans').delete().eq('id', planId);
+    if (error) throw error;
+    await fetchRef.current?.();
+  }, []);
+
+  return { plans, loading, fetchPlans, createPlan, deletePlan };
 }

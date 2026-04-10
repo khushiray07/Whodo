@@ -4,7 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { usePlan } from '../../hooks/usePlan';
-import { shareViaWhatsApp, buildInviteMessage } from '../../lib/whatsapp';
+import { shareViaWhatsApp, buildInviteMessage, buildInviteLink } from '../../lib/whatsapp';
 import { colors, fonts, spacing, radii } from '../../constants/theme';
 import { strings } from '../../constants/strings';
 import * as Clipboard from 'expo-clipboard';
@@ -16,7 +16,7 @@ export default function ShareScreen() {
 
   if (!plan) return null;
 
-  const inviteLink = `https://whodo.app/join/${plan.invite_code}`;
+  const inviteLink = buildInviteLink(plan.invite_code);
   const message = buildInviteMessage(plan.title, plan.invite_code);
 
   const handleShare = async () => {

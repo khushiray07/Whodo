@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { Slot, useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlan } from '../../../hooks/usePlan';
+import { supabase } from '../../../lib/supabase';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
 import type { PlanStatus } from '../../../types/database';
 
@@ -30,7 +31,7 @@ export default function PlanLayout() {
     }
 
     Alert.alert(
-      'Plan Status',
+      'Plan Options',
       `Current status: ${plan?.status ?? 'active'}`,
       [
         ...options.map((opt) => ({
@@ -43,6 +44,36 @@ export default function PlanLayout() {
             }
           },
         })),
+        {
+          text: 'Delete Plan',
+          style: 'destructive' as const,
+          onPress: () => {
+            Alert.alert(
+              'Delete Plan?',
+              'This will permanently delete this plan, all tasks, expenses, and participants. This cannot be undone.',
+              [
+                { text: 'Cancel', style: 'cancel' as const },
+                {
+                  text: 'Delete',
+                  style: 'destructive' as const,
+                  onPress: async () => {
+                    try {
+                      await supabase.from('activity_log').delete().eq('plan_id', id);
+                      await supabase.from('tasks').delete().eq('plan_id', id);
+                      await supabase.from('participants').delete().eq('plan_id', id);
+                      await supabase.from('notifications').delete().eq('plan_id', id);
+                      const { error } = await supabase.from('plans').delete().eq('id', id);
+                      if (error) throw error;
+                      router.replace('/(tabs)');
+                    } catch {
+                      Alert.alert('Could not delete plan');
+                    }
+                  },
+                },
+              ],
+            );
+          },
+        },
         { text: 'Cancel', style: 'cancel' as const },
       ],
     );

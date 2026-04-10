@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, TextInput } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PlanCard } from '../../components/PlanCard';
@@ -19,6 +19,13 @@ export default function HomeScreen() {
   const [planStats, setPlanStats] = useState<Record<string, { participants: number; pending: number; expenses: number }>>({});
   const [joinCode, setJoinCode] = useState('');
   const [showJoinInput, setShowJoinInput] = useState(false);
+
+  // Refetch plans when screen gains focus (e.g. after deleting a plan)
+  useFocusEffect(
+    useCallback(() => {
+      fetchPlans();
+    }, [fetchPlans])
+  );
 
   const handleJoinWithCode = () => {
     const code = joinCode.trim().toUpperCase();

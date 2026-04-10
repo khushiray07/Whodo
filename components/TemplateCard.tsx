@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceContainerLow,
     borderRadius: radii.default,
     padding: 20,
+    minHeight: 140,
     borderWidth: 2,
     borderColor: 'transparent',
   },

@@ -68,6 +68,18 @@ export function useAuth() {
     return data;
   }, []);
 
+  const signInWithPhone = useCallback(async (phone: string) => {
+    const { data, error } = await supabase.auth.signInWithOtp({ phone });
+    if (error) throw error;
+    return data;
+  }, []);
+
+  const verifyOtp = useCallback(async (phone: string, token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
+    if (error) throw error;
+    return data;
+  }, []);
+
   const createProfile = useCallback(async (displayName: string) => {
     if (!session?.user) return;
     const { data, error } = await supabase
@@ -109,6 +121,8 @@ export function useAuth() {
     needsProfile: !!session && !profile,
     signUp,
     signIn,
+    signInWithPhone,
+    verifyOtp,
     createProfile,
     updateProfile,
     logout,

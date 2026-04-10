@@ -4,22 +4,25 @@
     "slug": "whodo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./AppIcons/appstore.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "whodo",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./AppIcons/appstore.png",
       "resizeMode": "contain",
       "backgroundColor": "#f6f6fc"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.whodo"
+      "bundleIdentifier": "app.whodo",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["whatsapp"]
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./AppIcons/playstore.png",
         "backgroundColor": "#f6f6fc"
       },
       "package": "app.whodo",
@@ -28,7 +31,7 @@
         {
           "action": "VIEW",
           "autoVerify": true,
-          "data": [{ "scheme": "https", "host": "whodo.app", "pathPrefix": "/join" }],
+          "data": [{ "scheme": "whodo", "host": "join" }],
           "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
@@ -39,7 +42,7 @@
       "expo-secure-store",
       [
         "expo-notifications",
-        { "icon": "./assets/icon.png", "color": "#6b1ef3" }
+        { "icon": "./AppIcons/appstore.png", "color": "#6b1ef3" }
       ]
     ]
   }
