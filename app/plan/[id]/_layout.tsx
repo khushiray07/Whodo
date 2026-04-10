@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { Slot, useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlan } from '../../../hooks/usePlan';
+import { useAuth } from '../../../hooks/useAuth';
 import { supabase } from '../../../lib/supabase';
 import { WebContainer } from '../../../components/WebContainer';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
@@ -18,7 +19,10 @@ const TABS = [
 export default function PlanLayout() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { plan, updatePlan } = usePlan(id);
+  const { session } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('index');
+
+  const isOwner = plan?.created_by === session?.user?.id;
 
   const handleDeletePlan = () => {
     showConfirm(
@@ -62,11 +66,13 @@ export default function PlanLayout() {
         onPress: () => updatePlan({ status: 'active' }).catch(() => showAlert('Something went wrong!')),
       });
     }
-    menuOptions.push({
-      text: 'Delete Plan',
-      onPress: handleDeletePlan,
-      destructive: true,
-    });
+    if (isOwner) {
+      menuOptions.push({
+        text: 'Delete Plan',
+        onPress: handleDeletePlan,
+        destructive: true,
+      });
+    }
 
     showActionSheet('Plan Options', menuOptions, `Status: ${plan?.status ?? 'active'}`);
   };

@@ -9,16 +9,24 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { Avatar } from '../../../components/ui/Avatar';
 import { useTasks } from '../../../hooks/useTasks';
 import { useParticipants } from '../../../hooks/useParticipants';
+import { usePlan } from '../../../hooks/usePlan';
+import { useAuth } from '../../../hooks/useAuth';
 import { colors, fonts, spacing, shadows } from '../../../constants/theme';
 import { strings } from '../../../constants/strings';
+import { ParticipantModal } from '../../../components/ParticipantModal';
 import { showAlert, showConfirm } from '../../../lib/alert';
 import type { ParsedTask } from '../../../lib/smart-parse';
+import type { Participant } from '../../../types/database';
 
 export default function TasksTab() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { pending, done, loading, fetchTasks, claimTask, completeTask, deleteTask } = useTasks(id);
+  const { plan } = usePlan(id);
+  const { session } = useAuth();
+  const { tasks, pending, done, loading, fetchTasks, claimTask, completeTask, deleteTask } = useTasks(id);
   const { participants, getMyParticipant, removeParticipant, fetchParticipants } = useParticipants(id);
   const [myParticipant, setMyParticipant] = useState<any>(null);
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+  const isOwner = plan?.created_by === session?.user?.id;
 
   useEffect(() => {
     getMyParticipant().then(setMyParticipant);
@@ -181,7 +189,7 @@ export default function TasksTab() {
           <Text style={styles.sectionTitle}>People</Text>
           <View style={styles.peopleList}>
             {participants.map((p) => (
-              <View key={p.id} style={styles.personRow}>
+              <TouchableOpacity key={p.id} style={styles.personRow} onPress={() => setSelectedParticipant(p)} activeOpacity={0.7}>
                 <Avatar name={p.name} color={p.color} size={36} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.personName}>{p.name}</Text>
@@ -189,16 +197,8 @@ export default function TasksTab() {
                     {p.user_id ? 'Joined via app' : 'Added by organizer'}
                   </Text>
                 </View>
-                {!p.user_id && (
-                  <TouchableOpacity
-                    onPress={() => handleRemoveParticipant(p.id, p.name)}
-                    style={styles.removeButton}
-                    hitSlop={8}
-                  >
-                    <Text style={styles.removeText}>Remove</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+                <Text style={styles.viewProfile}>→</Text>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -206,6 +206,17 @@ export default function TasksTab() {
 
       <View style={{ height: 100 }} />
     </ScrollView>
+
+    {/* Participant Profile Modal */}
+    <ParticipantModal
+      participant={selectedParticipant}
+      tasks={tasks}
+      participants={participants}
+      isOwner={isOwner}
+      currentUserId={session?.user?.id}
+      onClose={() => setSelectedParticipant(null)}
+      onRemove={handleRemoveParticipant}
+    />
 
     {/* FAB */}
     <TouchableOpacity
@@ -324,6 +335,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 11,
     color: colors.onSurfaceVariant,
+  },
+  viewProfile: {
+    fontSize: 16,
+    color: colors.outlineVariant,
+    marginLeft: 4,
   },
   removeButton: {
     backgroundColor: colors.error + '15',
