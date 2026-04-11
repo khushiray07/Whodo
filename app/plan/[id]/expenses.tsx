@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ExpenseRow } from '../../../components/ExpenseRow';
@@ -8,11 +8,14 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { useTasks } from '../../../hooks/useTasks';
 import { useParticipants } from '../../../hooks/useParticipants';
 import { useSettlement } from '../../../hooks/useSettlement';
+import { usePlan } from '../../../hooks/usePlan';
+import { buildExpenseSummary, shareExpenseSummary } from '../../../lib/export';
 import { colors, fonts, spacing, radii } from '../../../constants/theme';
 import { strings } from '../../../constants/strings';
 
 export default function ExpensesTab() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { plan } = usePlan(id);
   const { expenses, tasks, loading, fetchTasks } = useTasks(id);
   const { participants, getMyParticipant } = useParticipants(id);
   const { totalSpent, perPerson, settlements } = useSettlement(tasks, participants);
@@ -67,7 +70,26 @@ export default function ExpensesTab() {
       {/* Khatabook */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{strings.khatabook}</Text>
-        <Badge text={`${expenses.length} Expenses`} variant="secondary" />
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          {expenses.length > 0 && (
+            <TouchableOpacity
+              onPress={() => {
+                const summary = buildExpenseSummary(
+                  plan?.title ?? 'Plan',
+                  expenses,
+                  participants,
+                  settlements,
+                  totalSpent,
+                );
+                shareExpenseSummary(summary);
+              }}
+              style={styles.exportBtn}
+            >
+              <Text style={styles.exportText}>📤 Export</Text>
+            </TouchableOpacity>
+          )}
+          <Badge text={`${expenses.length} Expenses`} variant="secondary" />
+        </View>
       </View>
 
       <View style={styles.list}>
@@ -167,6 +189,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headlineExtra,
     fontSize: 20,
     color: colors.onSurface,
+  },
+  exportBtn: {
+    backgroundColor: colors.primary + '12',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: radii.full,
+  },
+  exportText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 12,
+    color: colors.primary,
   },
   list: {
     gap: 16,
