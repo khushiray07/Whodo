@@ -33,7 +33,7 @@ export function useNotifications() {
     const channel = supabase
       .channel(`notifications-${id}`)
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
         table: 'notifications',
       }, () => {
