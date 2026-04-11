@@ -69,20 +69,30 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
-              Namaste{profile?.display_name ? `, ${profile.display_name}` : ''}!
-            </Text>
+          <View style={{ flex: 1 }}>
             <Text style={styles.brand}>{strings.appName}</Text>
           </View>
+          <Text style={styles.greeting}>
+            {profile?.display_name ?? ''}
+          </Text>
         </View>
-        <Text style={styles.tagline}>{strings.tagline}</Text>
 
-        {/* Join with Code */}
-        <TouchableOpacity style={styles.joinButton} onPress={() => setShowJoinInput(true)}>
-          <Text style={styles.joinButtonIcon}>🔗</Text>
-          <Text style={styles.joinButtonText}>Join a plan with invite code</Text>
-        </TouchableOpacity>
+        {/* Search + Join row */}
+        <View style={styles.searchRow}>
+          <View style={styles.searchWrap}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={styles.searchField}
+              placeholder="Search plans..."
+              placeholderTextColor={colors.outlineVariant}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          <TouchableOpacity style={styles.joinIconBtn} onPress={() => setShowJoinInput(true)} activeOpacity={0.7}>
+            <Text style={styles.joinIconText}>🔗</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Join Modal */}
         <Modal transparent visible={showJoinInput} animationType="fade" onRequestClose={() => setShowJoinInput(false)}>
@@ -120,20 +130,6 @@ export default function HomeScreen() {
             </Pressable>
           </Pressable>
         </Modal>
-
-        {/* Search */}
-        {plans.length > 2 && (
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="🔍  Search plans..."
-              placeholderTextColor={colors.outlineVariant}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              clearButtonMode="while-editing"
-            />
-          </View>
-        )}
 
         {/* Active Plans */}
         {plans.length > 0 && (
@@ -220,30 +216,60 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-  },
-  greeting: {
-    fontFamily: fonts.headlineMedium,
-    fontSize: 14,
-    color: colors.primary,
+    paddingTop: spacing.md,
+    paddingBottom: 4,
   },
   brand: {
     fontFamily: fonts.headlineExtra,
-    fontSize: 32,
+    fontSize: 26,
     color: colors.primary,
     letterSpacing: -1,
   },
-  tagline: {
-    fontFamily: fonts.headlineExtra,
-    fontSize: 32,
-    color: colors.onSurface,
-    letterSpacing: -1,
+  greeting: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.onSurfaceVariant,
+  },
+  // Search + Join row
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    marginTop: spacing.lg,
-    textAlign: 'center',
+    paddingVertical: spacing.sm,
+    gap: 10,
+  },
+  searchWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 44,
+  },
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 8,
+  },
+  searchField: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.onSurface,
+    paddingVertical: 0,
+  },
+  joinIconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: colors.primary + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  joinIconText: {
+    fontSize: 18,
   },
   section: {
     marginTop: spacing.xl,
@@ -303,19 +329,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '300',
     marginTop: -2,
-  },
-  searchContainer: {
-    marginTop: spacing.sm,
-    marginHorizontal: spacing.lg,
-  },
-  searchInput: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderRadius: radii.full,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    fontFamily: fonts.bodyMedium,
-    fontSize: 15,
-    color: colors.onSurface,
   },
   joinButton: {
     flexDirection: 'row',
