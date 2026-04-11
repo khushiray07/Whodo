@@ -74,11 +74,12 @@ export function useTasks(planId: string | undefined) {
     );
 
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ assigned_to: participantId })
-        .eq('id', taskId);
+      const { data: claimed, error } = await supabase.rpc('claim_task', {
+        p_task_id: taskId,
+        p_claimer_id: participantId,
+      });
       if (error) throw error;
+      if (!claimed) throw new Error('Someone else grabbed this one!');
     } catch (err) {
       // Revert on failure
       setTasks(previousTasks);

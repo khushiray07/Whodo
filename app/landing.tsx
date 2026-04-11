@@ -147,7 +147,7 @@ export default function LandingPage() {
               Tasks assigned, kharcha tracked, no one ghosts.
             </p>
 
-            <div className="stg-4" style={{ marginTop: 40 }}>
+            <div className="stg-4" style={{ marginTop: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
               <button
                 className="cta-btn"
                 onClick={() => router.push('/(auth)/login')}
@@ -162,7 +162,23 @@ export default function LandingPage() {
                   animation: 'glow 3s ease-in-out infinite',
                 }}
               >Start Planning →</button>
-              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, marginTop: 12 }}>No download needed</p>
+              <a
+                href="https://expo.dev/artifacts/eas/dZwCwGX8dcbsTKhVzH2sA1.apk"
+                className="cta-btn"
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  color: '#c4b5fd',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  padding: '12px 32px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                }}
+              >📱 Download Android APK</a>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, marginTop: 4 }}>Works in browser too — no download needed</p>
             </div>
           </div>
 
@@ -266,7 +282,7 @@ export default function LandingPage() {
             Ek link, poori gang ready.
           </p>
 
-          <div style={{ marginTop: 40, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ marginTop: 40, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', flexDirection: 'column', alignItems: 'center' }}>
             <button
               className="cta-btn"
               onClick={() => router.push('/(auth)/login')}
@@ -278,6 +294,18 @@ export default function LandingPage() {
                 boxShadow: '0 8px 30px rgba(107,30,243,0.3)',
               }}
             >🌐 Open Web App</button>
+            <a
+              href="https://expo.dev/artifacts/eas/dZwCwGX8dcbsTKhVzH2sA1.apk"
+              className="cta-btn"
+              style={{
+                color: '#5a5b60', fontSize: 14, fontWeight: 600,
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                padding: '10px 28px', borderRadius: 999,
+                border: '1px solid rgba(0,0,0,0.1)',
+                textDecoration: 'none', display: 'inline-block',
+                background: '#fff',
+              }}
+            >📱 Download Android APK</a>
           </div>
         </section>
 

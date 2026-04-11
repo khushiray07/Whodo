@@ -40,15 +40,18 @@ export default function HomeScreen() {
   }, [plans]);
 
   const loadPlanStats = async () => {
+    if (plans.length === 0) { setPlanStats({}); return; }
+    const { data, error } = await supabase.rpc('get_plan_stats', {
+      plan_ids: plans.map((p) => p.id),
+    });
+    if (error || !data) return;
     const stats: typeof planStats = {};
-    for (const plan of plans) {
-      const [{ count: pCount }, { data: tasks }] = await Promise.all([
-        supabase.from('participants').select('*', { count: 'exact', head: true }).eq('plan_id', plan.id),
-        supabase.from('tasks').select('status, expense_amount').eq('plan_id', plan.id),
-      ]);
-      const pendingTasks = (tasks ?? []).filter((t) => t.status === 'pending');
-      const totalExpense = (tasks ?? []).reduce((s, t) => s + (t.expense_amount ?? 0), 0);
-      stats[plan.id] = { participants: pCount ?? 0, pending: pendingTasks.length, expenses: totalExpense };
+    for (const row of data as any[]) {
+      stats[row.plan_id] = {
+        participants: Number(row.participant_count) || 0,
+        pending: Number(row.pending_task_count) || 0,
+        expenses: Number(row.total_expenses) || 0,
+      };
     }
     setPlanStats(stats);
   };

@@ -74,7 +74,7 @@ export default function JoinScreen() {
     if (!name.trim() || !planId) return;
 
     if (!isAuthenticated) {
-      router.push('/(auth)/login');
+      router.push({ pathname: '/(auth)/login', params: { redirect: `/join/${code}` } });
       return;
     }
 
