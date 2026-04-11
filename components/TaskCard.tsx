@@ -35,7 +35,7 @@ function getDeadlineUrgency(deadline: string | null): 'overdue' | 'today' | 'tom
 
 export function TaskCard({ task, assignee, participants, myParticipantId, onDone, onClaim, onEdit, onDelete, onRemind, completed, showComments }: Props) {
   const urgency = completed ? null : getDeadlineUrgency(task.deadline);
-  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(true);
   if (completed) {
     return (
       <TouchableOpacity onPress={onEdit} activeOpacity={0.8} style={styles.completedContainer}>

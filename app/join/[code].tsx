@@ -63,7 +63,7 @@ export default function JoinScreen() {
         .select('id')
         .eq('plan_id', foundPlanId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (existing) {
         router.replace(`/plan/${foundPlanId}`);
       }
@@ -88,7 +88,7 @@ export default function JoinScreen() {
         .select('id')
         .eq('plan_id', planId)
         .eq('user_id', user!.id)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         router.replace(`/plan/${planId}`);
