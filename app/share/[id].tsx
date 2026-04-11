@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
@@ -10,11 +10,13 @@ import { strings } from '../../constants/strings';
 import * as Clipboard from 'expo-clipboard';
 import { showAlert } from '../../lib/alert';
 import { WebContainer } from '../../components/WebContainer';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function ShareScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { plan } = usePlan(id);
   const [copied, setCopied] = useState(false);
+  const [fullscreenQR, setFullscreenQR] = useState(false);
 
   if (!plan) return null;
 
@@ -34,6 +36,10 @@ export default function ShareScreen() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const screenWidth = Dimensions.get('window').width;
+  const qrSize = Math.min(screenWidth - 80, 200);
+  const fullscreenQRSize = Math.min(screenWidth - 60, 400);
+
   return (
     <SafeAreaView style={styles.safe}>
       <WebContainer>
@@ -43,6 +49,22 @@ export default function ShareScreen() {
           </TouchableOpacity>
           <Text style={styles.title}>{strings.shareTitle}</Text>
           <Text style={styles.subtitle}>{strings.shareSubtitle}</Text>
+
+          {/* QR Code */}
+          <TouchableOpacity onPress={() => setFullscreenQR(true)} activeOpacity={0.9}>
+            <View style={styles.qrCard}>
+              <Text style={styles.qrLabel}>Scan to Join</Text>
+              <View style={styles.qrContainer}>
+                <QRCode
+                  value={inviteLink}
+                  size={qrSize}
+                  color={colors.onSurface}
+                  backgroundColor="#ffffff"
+                />
+              </View>
+              <Text style={styles.qrHint}>Tap for fullscreen</Text>
+            </View>
+          </TouchableOpacity>
 
           {/* WhatsApp Preview */}
           <View style={styles.whatsappPreview}>
@@ -85,6 +107,23 @@ export default function ShareScreen() {
           </View>
         </ScrollView>
       </WebContainer>
+
+      {/* Fullscreen QR Modal (for projector) */}
+      <Modal visible={fullscreenQR} animationType="fade" transparent>
+        <Pressable style={styles.qrOverlay} onPress={() => setFullscreenQR(false)}>
+          <View style={styles.qrFullscreenCard}>
+            <Text style={styles.qrFullscreenTitle}>{plan.title}</Text>
+            <QRCode
+              value={inviteLink}
+              size={fullscreenQRSize}
+              color={colors.onSurface}
+              backgroundColor="#ffffff"
+            />
+            <Text style={styles.qrFullscreenCode}>{plan.invite_code}</Text>
+            <Text style={styles.qrFullscreenHint}>Scan to join · Tap anywhere to close</Text>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -121,6 +160,67 @@ const styles = StyleSheet.create({
     color: colors.onSurfaceVariant,
     textAlign: 'center',
   },
+  // QR Code Card
+  qrCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: radii.lg,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 30,
+    elevation: 4,
+  },
+  qrLabel: {
+    fontFamily: fonts.headlineExtra,
+    fontSize: 16,
+    color: colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  qrContainer: {
+    padding: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: radii.default,
+  },
+  qrHint: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.outline,
+  },
+  // Fullscreen QR
+  qrOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrFullscreenCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: radii.lg,
+    padding: 40,
+    alignItems: 'center',
+    gap: 20,
+  },
+  qrFullscreenTitle: {
+    fontFamily: fonts.headlineExtra,
+    fontSize: 24,
+    color: colors.onSurface,
+  },
+  qrFullscreenCode: {
+    fontFamily: fonts.headlineExtra,
+    fontSize: 32,
+    color: colors.primary,
+    letterSpacing: 4,
+  },
+  qrFullscreenHint: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.outline,
+  },
+  // WhatsApp Preview
   whatsappPreview: {
     borderRadius: radii.default,
     overflow: 'hidden',

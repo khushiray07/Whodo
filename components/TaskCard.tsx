@@ -47,11 +47,6 @@ export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, on
 
   return (
     <TouchableOpacity onPress={onEdit} activeOpacity={0.9} style={[styles.container, shadows.cardLight]}>
-      {onDelete && (
-        <TouchableOpacity onPress={onDelete} style={styles.deleteButtonAbsolute} hitSlop={8}>
-          <Text style={styles.deleteText}>✕</Text>
-        </TouchableOpacity>
-      )}
       <View style={styles.topRow}>
         <View style={{ flex: 1 }}>
           {assignee ? (
@@ -70,18 +65,25 @@ export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, on
             <Text style={styles.deadline}>Deadline: {format(new Date(task.deadline + 'T00:00:00'), 'MMM d, yyyy')}</Text>
           )}
         </View>
-        {assignee ? (
-          <View style={styles.avatarCol}>
-            <Avatar name={assignee.name} color={assignee.color} size={48} />
-            <Text style={styles.avatarLabel}>{assignee.name}</Text>
-          </View>
-        ) : (
-          onClaim && (
-            <TouchableOpacity onPress={onClaim} style={styles.claimButton}>
-              <Text style={styles.claimText}>Claim</Text>
+        <View style={styles.rightCol}>
+          {onDelete && (
+            <TouchableOpacity onPress={onDelete} style={styles.deleteButton} hitSlop={8}>
+              <Text style={styles.deleteText}>✕</Text>
             </TouchableOpacity>
-          )
-        )}
+          )}
+          {assignee ? (
+            <View style={styles.avatarCol}>
+              <Avatar name={assignee.name} color={assignee.color} size={40} />
+              <Text style={styles.avatarLabel}>{assignee.name}</Text>
+            </View>
+          ) : (
+            onClaim && (
+              <TouchableOpacity onPress={onClaim} style={styles.claimButton}>
+                <Text style={styles.claimText}>Claim</Text>
+              </TouchableOpacity>
+            )
+          )}
+        </View>
       </View>
 
       <View style={styles.bottomRow}>
@@ -102,7 +104,7 @@ export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, on
               variant="secondary"
               onPress={onDone}
               style={styles.doneButton}
-              textStyle={{ fontSize: 13 }}
+              textStyle={{ fontSize: 12 }}
             />
           )}
         </View>
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surfaceContainerLowest,
     borderRadius: radii.default,
-    padding: 20,
+    padding: 16,
   },
   completedContainer: {
     backgroundColor: colors.surfaceContainerLow + '80',
@@ -150,15 +152,19 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.headlineExtra,
-    fontSize: 18,
+    fontSize: 16,
     color: colors.onSurface,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   deadline: {
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.onSurfaceVariant,
     marginTop: 4,
+  },
+  rightCol: {
+    alignItems: 'flex-end',
+    gap: 6,
   },
   avatarCol: {
     alignItems: 'center',
@@ -183,7 +189,7 @@ const styles = StyleSheet.create({
     color: colors.tertiary,
   },
   bottomRow: {
-    marginTop: 16,
+    marginTop: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -207,9 +213,9 @@ const styles = StyleSheet.create({
   remindButton: {
     backgroundColor: colors.primary + '12',
     borderRadius: radii.full,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    height: 40,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    height: 34,
     justifyContent: 'center',
   },
   remindText: {
@@ -218,8 +224,8 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   doneButton: {
-    height: 40,
-    paddingHorizontal: 20,
+    height: 34,
+    paddingHorizontal: 16,
   },
   completedTitle: {
     fontFamily: fonts.headlineExtra,
@@ -252,18 +258,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headlineSemiBold,
     fontSize: 14,
     color: colors.onSecondaryContainer,
-  },
-  deleteButtonAbsolute: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 10,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.error + '15',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   deleteButton: {
     width: 24,

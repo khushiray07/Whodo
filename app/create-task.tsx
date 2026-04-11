@@ -6,6 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { DatePicker } from '../components/ui/DatePicker';
 import { ParticipantPicker } from '../components/ParticipantPicker';
+import { SplitPicker, type SplitEntry } from '../components/SplitPicker';
 import { useParticipants } from '../hooks/useParticipants';
 import { useTasks } from '../hooks/useTasks';
 import { supabase } from '../lib/supabase';
@@ -25,6 +26,8 @@ export default function CreateTaskScreen() {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
   const [deadline, setDeadline] = useState('');
   const [expense, setExpense] = useState('');
+  const [splitAll, setSplitAll] = useState(true);
+  const [splits, setSplits] = useState<SplitEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [myParticipant, setMyParticipant] = useState<any>(null);
 
@@ -79,6 +82,16 @@ export default function CreateTaskScreen() {
           .update(updates)
           .eq('id', taskId);
         if (error) throw error;
+
+        // Update expense splits
+        if (expenseNum && expenseNum > 0 && !splitAll && splits.length > 0) {
+          await supabase.from('expense_splits').delete().eq('task_id', taskId);
+          await supabase.from('expense_splits').insert(
+            splits.map((s) => ({ task_id: taskId, participant_id: s.participantId, weight: s.weight })),
+          );
+        } else if (splitAll) {
+          await supabase.from('expense_splits').delete().eq('task_id', taskId);
+        }
       } else {
         // Create new task
         await createTask(
@@ -89,6 +102,23 @@ export default function CreateTaskScreen() {
           expenseNum && expenseNum > 0 ? expenseNum : undefined,
           expenseNum && expenseNum > 0 ? (selectedParticipant ?? myParticipant.id) : undefined,
         );
+
+        // Save expense splits for the new task
+        if (expenseNum && expenseNum > 0 && !splitAll && splits.length > 0) {
+          // Fetch the newly created task to get its ID
+          const { data: newTasks } = await supabase
+            .from('tasks')
+            .select('id')
+            .eq('plan_id', planId)
+            .eq('title', title.trim())
+            .order('created_at', { ascending: false })
+            .limit(1);
+          if (newTasks && newTasks[0]) {
+            await supabase.from('expense_splits').insert(
+              splits.map((s) => ({ task_id: newTasks[0].id, participant_id: s.participantId, weight: s.weight })),
+            );
+          }
+        }
       }
       router.canGoBack() ? router.back() : router.replace('/(tabs)');
     } catch (e: any) {
@@ -153,6 +183,20 @@ export default function CreateTaskScreen() {
             onChangeText={setExpense}
             keyboardType="numeric"
           />
+
+          {/* Split Picker - only show when expense is entered */}
+          {expense && parseFloat(expense) > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.label}>Split Among</Text>
+              <SplitPicker
+                participants={participants}
+                splits={splits}
+                onChange={setSplits}
+                splitAll={splitAll}
+                onToggleSplitAll={setSplitAll}
+              />
+            </View>
+          )}
         </ScrollView>
 
         {/* Bottom CTA */}

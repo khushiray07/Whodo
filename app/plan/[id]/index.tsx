@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { TaskCard } from '../../../components/TaskCard';
 import { SmartTaskInput } from '../../../components/SmartTaskInput';
+import { Confetti } from '../../../components/Confetti';
 import { Badge } from '../../../components/ui/Badge';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { Avatar } from '../../../components/ui/Avatar';
@@ -27,11 +28,22 @@ export default function TasksTab() {
   const { participants, getMyParticipant, removeParticipant, fetchParticipants } = useParticipants(id);
   const [myParticipant, setMyParticipant] = useState<any>(null);
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const prevDoneCountRef = useRef<number | null>(null);
   const isOwner = plan?.created_by === session?.user?.id;
 
   useEffect(() => {
     getMyParticipant().then(setMyParticipant);
   }, [getMyParticipant]);
+
+  // Fire confetti when ALL tasks are completed
+  useEffect(() => {
+    const totalTasks = pending.length + done.length;
+    if (totalTasks > 0 && pending.length === 0 && prevDoneCountRef.current !== null && prevDoneCountRef.current !== totalTasks) {
+      setShowConfetti(true);
+    }
+    prevDoneCountRef.current = done.length;
+  }, [pending.length, done.length]);
 
   const participantMap = new Map(participants.map((p) => [p.id, p]));
 
@@ -107,6 +119,7 @@ export default function TasksTab() {
 
   return (
     <View style={{ flex: 1 }}>
+    <Confetti active={showConfetti} onComplete={() => setShowConfetti(false)} />
     <ScrollView
       contentContainerStyle={styles.scroll}
       showsVerticalScrollIndicator={false}
@@ -121,13 +134,20 @@ export default function TasksTab() {
         </View>
         <View style={[styles.bentoCard, styles.bentoCardAccent]}>
           <View style={styles.avatarRow}>
-            {participants.slice(0, 3).map((p) => (
+            {(participants.length > 8 ? participants.slice(0, 7) : participants).map((p) => (
               <View key={p.id} style={[styles.miniAvatar, { backgroundColor: p.color + '33' }]}>
-                <Text style={{ color: p.color, fontFamily: fonts.headlineSemiBold, fontSize: 10 }}>
+                <Text style={{ color: p.color, fontFamily: fonts.headlineSemiBold, fontSize: 13 }}>
                   {p.name[0]}
                 </Text>
               </View>
             ))}
+            {participants.length > 8 && (
+              <View style={[styles.miniAvatar, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <Text style={{ color: colors.onSurfaceVariant, fontFamily: fonts.headlineSemiBold, fontSize: 11 }}>
+                  +{participants.length - 7}
+                </Text>
+              </View>
+            )}
           </View>
           <Text style={styles.bentoAccentText}>
             {participants.length} {participants.length === 1 ? 'person' : 'people'}
@@ -256,7 +276,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     justifyContent: 'space-between',
-    aspectRatio: 1,
   },
   bentoCardAccent: {
     backgroundColor: colors.primary + '08',
@@ -280,17 +299,17 @@ const styles = StyleSheet.create({
   },
   avatarRow: {
     flexDirection: 'row',
-    gap: -8,
+    flexWrap: 'wrap',
+    gap: 6,
   },
   miniAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: colors.background,
-    marginLeft: -4,
   },
   bentoAccentText: {
     fontFamily: fonts.headlineSemiBold,

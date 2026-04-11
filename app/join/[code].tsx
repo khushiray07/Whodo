@@ -17,6 +17,8 @@ export default function JoinScreen() {
   const { isAuthenticated, profile } = useAuth();
   const [planTitle, setPlanTitle] = useState('');
   const [planId, setPlanId] = useState('');
+  const [participantCount, setParticipantCount] = useState(0);
+  const [eventDate, setEventDate] = useState<string | null>(null);
   const [name, setName] = useState(profile?.display_name ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,6 +26,20 @@ export default function JoinScreen() {
   useEffect(() => {
     lookupPlan();
   }, [code]);
+
+  // Pre-fill name from profile when it loads
+  useEffect(() => {
+    if (profile?.display_name && !name) {
+      setName(profile.display_name);
+    }
+  }, [profile?.display_name]);
+
+  // Auto-join if logged in and name is available
+  useEffect(() => {
+    if (isAuthenticated && profile?.display_name && planId) {
+      handleJoin();
+    }
+  }, [isAuthenticated, profile?.display_name, planId]);
 
   const lookupPlan = async () => {
     if (!code) return;
@@ -33,8 +49,25 @@ export default function JoinScreen() {
       setError(strings.invalidCode);
       return;
     }
+    const foundPlanId = data[0].id;
     setPlanTitle(data[0].title);
-    setPlanId(data[0].id);
+    setPlanId(foundPlanId);
+    setParticipantCount(data[0].participant_count ?? 0);
+    setEventDate(data[0].event_date ?? null);
+
+    // Auto-redirect if already a participant
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: existing } = await supabase
+        .from('participants')
+        .select('id')
+        .eq('plan_id', foundPlanId)
+        .eq('user_id', user.id)
+        .single();
+      if (existing) {
+        router.replace(`/plan/${foundPlanId}`);
+      }
+    }
   };
 
   const handleJoin = async () => {
@@ -98,6 +131,25 @@ export default function JoinScreen() {
     );
   }
 
+  // If logged in, show joining state (auto-join handles the rest)
+  if (isAuthenticated && planId) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <WebContainer>
+          <View style={styles.center}>
+            <Text style={styles.brand}>{strings.appName}</Text>
+            {planTitle && (
+              <View style={styles.planBadge}>
+                <Text style={styles.planName}>{planTitle}</Text>
+              </View>
+            )}
+            <Text style={styles.subtitle}>Joining...</Text>
+          </View>
+        </WebContainer>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <WebContainer>
@@ -108,6 +160,12 @@ export default function JoinScreen() {
             <View style={styles.planBadge}>
               <Text style={styles.planName}>{planTitle}</Text>
             </View>
+          )}
+          {participantCount > 0 && (
+            <Text style={styles.metaText}>
+              {participantCount} {participantCount === 1 ? 'person' : 'people'} already in
+              {eventDate ? ` · ${new Date(eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : ''}
+            </Text>
           )}
           <Text style={styles.subtitle}>{strings.joinSubtitle}</Text>
 
@@ -163,6 +221,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headlineSemiBold,
     fontSize: 16,
     color: colors.primary,
+  },
+  metaText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.onSurfaceVariant,
   },
   subtitle: {
     fontFamily: fonts.body,

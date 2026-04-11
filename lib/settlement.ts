@@ -1,8 +1,9 @@
-import type { Task, Participant, Settlement } from '../types/database';
+import type { Task, Participant, ExpenseSplit, Settlement } from '../types/database';
 
 export function computeSettlements(
   tasks: Task[],
   participants: Participant[],
+  expenseSplits: ExpenseSplit[] = [],
 ): Settlement[] {
   if (participants.length <= 1) return [];
 
@@ -14,23 +15,49 @@ export function computeSettlements(
   const expenses = tasks.filter((t) => t.expense_amount != null && t.expense_amount > 0);
   if (expenses.length === 0) return [];
 
+  // Index splits by task_id for fast lookup
+  const splitsByTask = new Map<string, ExpenseSplit[]>();
+  for (const split of expenseSplits) {
+    const arr = splitsByTask.get(split.task_id) ?? [];
+    arr.push(split);
+    splitsByTask.set(split.task_id, arr);
+  }
+
   for (const expense of expenses) {
     const amount = expense.expense_amount!;
     const payerId = expense.expense_paid_by ?? expense.assigned_to ?? expense.created_by;
 
-    const eligible = participants.filter(
-      (p) => new Date(p.joined_at) <= new Date(expense.created_at),
-    );
-    if (eligible.length === 0) continue;
+    const customSplits = splitsByTask.get(expense.id);
 
-    const share = amount / eligible.length;
+    if (customSplits && customSplits.length > 0) {
+      // Custom split: divide by weights among specified participants
+      const totalWeight = customSplits.reduce((sum, s) => sum + s.weight, 0);
+      if (totalWeight <= 0) continue;
 
-    // Payer gets credit
-    balances.set(payerId, (balances.get(payerId) ?? 0) + amount);
+      // Payer gets credit
+      balances.set(payerId, (balances.get(payerId) ?? 0) + amount);
 
-    // Everyone (including payer) gets debited their share
-    for (const p of eligible) {
-      balances.set(p.id, (balances.get(p.id) ?? 0) - share);
+      // Each split participant gets debited their weighted share
+      for (const split of customSplits) {
+        const share = (split.weight / totalWeight) * amount;
+        balances.set(split.participant_id, (balances.get(split.participant_id) ?? 0) - share);
+      }
+    } else {
+      // Default: equal split among all eligible participants (joined before expense)
+      const eligible = participants.filter(
+        (p) => new Date(p.joined_at) <= new Date(expense.created_at),
+      );
+      if (eligible.length === 0) continue;
+
+      const share = amount / eligible.length;
+
+      // Payer gets credit
+      balances.set(payerId, (balances.get(payerId) ?? 0) + amount);
+
+      // Everyone (including payer) gets debited their share
+      for (const p of eligible) {
+        balances.set(p.id, (balances.get(p.id) ?? 0) - share);
+      }
     }
   }
 

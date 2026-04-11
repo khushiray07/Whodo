@@ -89,6 +89,13 @@ export type ActivityLogEntry = {
   created_at: string;
 };
 
+export type ExpenseSplit = {
+  id: string;
+  task_id: string;
+  participant_id: string;
+  weight: number;
+};
+
 export type Settlement = {
   from: Participant;
   to: Participant;
