@@ -163,7 +163,7 @@ export default function LandingPage() {
                 }}
               >Start Planning →</button>
               <a
-                href="https://expo.dev/artifacts/eas/dZwCwGX8dcbsTKhVzH2sA1.apk"
+                href="https://expo.dev/accounts/raykhushi/projects/whodo/builds/6935ef63-143d-4918-b7c4-fb5c08248cf4"
                 className="cta-btn"
                 style={{
                   background: 'rgba(255,255,255,0.1)',
@@ -295,7 +295,7 @@ export default function LandingPage() {
               }}
             >🌐 Open Web App</button>
             <a
-              href="https://expo.dev/artifacts/eas/dZwCwGX8dcbsTKhVzH2sA1.apk"
+              href="https://expo.dev/accounts/raykhushi/projects/whodo/builds/6935ef63-143d-4918-b7c4-fb5c08248cf4"
               className="cta-btn"
               style={{
                 color: '#5a5b60', fontSize: 14, fontWeight: 600,

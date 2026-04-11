@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
 import { BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold } from '@expo-google-fonts/be-vietnam-pro';
-import { colors } from '../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, fonts } from '../constants/theme';
 import { useAuth } from '../hooks/useAuth';
 import { registerForPushNotifications } from '../lib/push';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -27,42 +28,67 @@ export default function RootLayout() {
   const { isAuthenticated, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [isReady, setIsReady] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [onboardingSeen, setOnboardingSeen] = useState(true); // default true to avoid flash
+
+  // Check onboarding status once
+  useEffect(() => {
+    AsyncStorage.getItem('onboarding_seen').then((val) => {
+      setOnboardingSeen(val === 'true');
+      setOnboardingChecked(true);
+    });
+  }, []);
 
   useEffect(() => {
-    if (loading || !fontsLoaded) return;
+    if (loading || !fontsLoaded || !onboardingChecked) return;
 
     const inAuthGroup = segments[0] === '(auth)';
     const onLanding = segments[0] === 'landing';
     const onJoin = segments[0] === 'join';
+    const onOnboarding = segments[0] === 'onboarding';
     const isDeepLink = segments[0] === 'plan' || segments[0] === 'share';
 
-    if (!isAuthenticated && !inAuthGroup && !onLanding && !onJoin) {
+    if (!isAuthenticated && !inAuthGroup && !onLanding && !onJoin && !onOnboarding) {
       if (Platform.OS === 'web') {
         if (isDeepLink) {
-          // Deep link: send to login with redirect back to the original path
           const path = '/' + segments.join('/');
           router.replace(`/(auth)/login?redirect=${encodeURIComponent(path)}`);
         } else {
           router.replace('/landing');
         }
       } else {
-        router.replace('/(auth)/login');
+        // Native: show onboarding for first-time users
+        if (!onboardingSeen) {
+          router.replace('/onboarding');
+        } else {
+          router.replace('/(auth)/login');
+        }
       }
-    } else if (isAuthenticated && (inAuthGroup || onLanding)) {
+    } else if (isAuthenticated && (inAuthGroup || onLanding || onOnboarding)) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, loading, segments, fontsLoaded]);
+
+    setIsReady(true);
+  }, [isAuthenticated, loading, segments, fontsLoaded, onboardingChecked, onboardingSeen]);
 
   // Register for push notifications after successful auth
   useEffect(() => {
     if (isAuthenticated) {
-      registerForPushNotifications().catch(() => {
-        // Silently fail — push is optional
-      });
+      registerForPushNotifications().catch(() => {});
     }
   }, [isAuthenticated]);
 
-  if (!fontsLoaded || loading) return null;
+  // Show branded splash while loading
+  if (!fontsLoaded || loading || !onboardingChecked || !isReady) {
+    return (
+      <View style={splashStyles.container}>
+        <StatusBar style="light" />
+        <Text style={splashStyles.logo}>Whodo</Text>
+        <Text style={splashStyles.tagline}>Jiska naam, uska kaam</Text>
+      </View>
+    );
+  }
 
   return (
     <ErrorBoundary>
@@ -74,6 +100,7 @@ export default function RootLayout() {
           animation: 'slide_from_right',
         }}
       >
+        <Stack.Screen name="onboarding" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="landing" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
@@ -89,3 +116,28 @@ export default function RootLayout() {
     </ErrorBoundary>
   );
 }
+
+const splashStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0c0a14',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  logo: {
+    fontFamily: Platform.OS === 'web' ? "'Plus Jakarta Sans', sans-serif" : undefined,
+    fontSize: 52,
+    fontWeight: '800',
+    color: '#ffffff',
+    textShadowColor: 'rgba(107, 30, 243, 0.5)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 20,
+  },
+  tagline: {
+    fontFamily: Platform.OS === 'web' ? "'Be Vietnam Pro', sans-serif" : undefined,
+    fontSize: 16,
+    color: '#c4b5fd',
+    fontStyle: 'italic',
+  },
+});
