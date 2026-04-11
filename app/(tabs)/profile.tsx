@@ -63,6 +63,12 @@ export default function ProfileScreen() {
       } else {
         // Native: use expo-image-picker
         const ImagePicker = require('expo-image-picker');
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          showAlert('Permission needed', 'Please allow photo access to upload an avatar.');
+          setUploading(false);
+          return;
+        }
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ['images'],
           allowsEditing: true,
@@ -74,8 +80,8 @@ export default function ProfileScreen() {
         const ext = uri.split('.').pop() ?? 'jpg';
         const path = `${session.user.id}/avatar.${ext}`;
         const response = await fetch(uri);
-        const blob = await response.blob();
-        const { error } = await supabase.storage.from('avatars').upload(path, blob, {
+        const arrayBuffer = await response.arrayBuffer();
+        const { error } = await supabase.storage.from('avatars').upload(path, arrayBuffer, {
           upsert: true,
           contentType: `image/${ext === 'png' ? 'png' : 'jpeg'}`,
         });
