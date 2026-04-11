@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Avatar } from './ui/Avatar';
 import { Button } from './ui/Button';
+import { TaskComments } from './TaskComments';
 import { colors, fonts, radii, shadows } from '../constants/theme';
 import type { Task, Participant } from '../types/database';
 import { strings } from '../constants/strings';
@@ -10,15 +11,31 @@ import { format } from 'date-fns';
 type Props = {
   task: Task;
   assignee?: Participant | null;
+  participants?: Participant[];
+  myParticipantId?: string | null;
   onDone?: () => void;
   onClaim?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onRemind?: () => void;
   completed?: boolean;
+  showComments?: boolean;
 };
 
-export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, onRemind, completed }: Props) {
+function getDeadlineUrgency(deadline: string | null): 'overdue' | 'today' | 'tomorrow' | null {
+  if (!deadline) return null;
+  const d = new Date(deadline + 'T23:59:59');
+  const now = new Date();
+  const diffDays = Math.floor((d.getTime() - now.getTime()) / 86400000);
+  if (diffDays < 0) return 'overdue';
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'tomorrow';
+  return null;
+}
+
+export function TaskCard({ task, assignee, participants, myParticipantId, onDone, onClaim, onEdit, onDelete, onRemind, completed, showComments }: Props) {
+  const urgency = completed ? null : getDeadlineUrgency(task.deadline);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   if (completed) {
     return (
       <TouchableOpacity onPress={onEdit} activeOpacity={0.8} style={styles.completedContainer}>
@@ -62,7 +79,16 @@ export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, on
           )}
           <Text style={styles.title}>{task.title}</Text>
           {task.deadline && (
-            <Text style={styles.deadline}>Deadline: {format(new Date(task.deadline + 'T00:00:00'), 'MMM d, yyyy')}</Text>
+            <View style={[styles.deadlineRow, urgency && styles.deadlineUrgent]}>
+              <Text style={[
+                styles.deadline,
+                urgency === 'overdue' && { color: colors.error, fontFamily: fonts.headlineSemiBold },
+                urgency === 'today' && { color: colors.error, fontFamily: fonts.headlineSemiBold },
+                urgency === 'tomorrow' && { color: '#e65100', fontFamily: fonts.headlineSemiBold },
+              ]}>
+                {urgency === 'overdue' ? '🔴 Overdue!' : urgency === 'today' ? '🔴 Due today!' : urgency === 'tomorrow' ? '🟡 Due tomorrow' : `📅 ${format(new Date(task.deadline + 'T00:00:00'), 'MMM d, yyyy')}`}
+              </Text>
+            </View>
           )}
         </View>
         <View style={styles.rightCol}>
@@ -109,6 +135,27 @@ export function TaskCard({ task, assignee, onDone, onClaim, onEdit, onDelete, on
           )}
         </View>
       </View>
+
+      {/* Comments toggle + section */}
+      {showComments && participants && (
+        <>
+          <TouchableOpacity
+            onPress={() => setCommentsOpen(!commentsOpen)}
+            style={styles.commentToggle}
+          >
+            <Text style={styles.commentToggleText}>
+              {commentsOpen ? '▾ Hide notes' : '▸ Notes & comments'}
+            </Text>
+          </TouchableOpacity>
+          {commentsOpen && (
+            <TaskComments
+              taskId={task.id}
+              participants={participants}
+              myParticipantId={myParticipantId ?? null}
+            />
+          )}
+        </>
+      )}
     </TouchableOpacity>
   );
 }
@@ -156,11 +203,20 @@ const styles = StyleSheet.create({
     color: colors.onSurface,
     lineHeight: 22,
   },
+  deadlineRow: {
+    marginTop: 4,
+  },
+  deadlineUrgent: {
+    backgroundColor: colors.error + '08',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
   deadline: {
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.onSurfaceVariant,
-    marginTop: 4,
   },
   rightCol: {
     alignItems: 'flex-end',
@@ -222,6 +278,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headlineSemiBold,
     fontSize: 12,
     color: colors.primary,
+  },
+  commentToggle: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.surfaceContainer,
+  },
+  commentToggleText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 12,
+    color: colors.outline,
   },
   doneButton: {
     height: 34,

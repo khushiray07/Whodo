@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useActivityLog } from '../../hooks/useActivityLog';
 import { colors, fonts, spacing, radii } from '../../constants/theme';
@@ -44,7 +44,13 @@ export default function ActivityScreen() {
         <Text style={styles.title}>{strings.activityTitle}</Text>
 
         {activities.length === 0 && !loading && (
-          <EmptyState title={strings.noActivity} subtitle={strings.noActivitySubtitle} />
+          <EmptyState
+            emoji="⚡"
+            title="Nothing here yet!"
+            subtitle="Create a plan and start assigning tasks. Every action shows up in the activity feed."
+            actionLabel="Create a Plan"
+            onAction={() => router.push('/create-plan')}
+          />
         )}
 
         <View style={styles.list}>

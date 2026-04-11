@@ -9,51 +9,49 @@ type Props = {
   plan: Plan;
   participantCount: number;
   pendingTaskCount: number;
+  completedTaskCount: number;
   totalExpense: number;
   onPress: () => void;
 };
 
-export function PlanCard({ plan, participantCount, pendingTaskCount, totalExpense, onPress }: Props) {
-  const isGradient = true; // all cards get the gradient header
+export function PlanCard({ plan, participantCount, pendingTaskCount, completedTaskCount, totalExpense, onPress }: Props) {
   const isDimmed = plan.status === 'completed' || plan.status === 'archived';
+  const totalTasks = pendingTaskCount + completedTaskCount;
+  const progress = totalTasks > 0 ? completedTaskCount / totalTasks : 0;
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.95}>
       <View style={[styles.container, shadows.card, isDimmed && styles.dimmedContainer]}>
-        {isGradient ? (
-          <LinearGradient
-            colors={[colors.primary, colors.primaryContainer]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientHeader}
-          >
-            <View style={styles.headerContent}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.gradientTitle}>{plan.title}</Text>
-                <Text style={styles.gradientSubtitle}>
-                  {participantCount} {participantCount === 1 ? 'person' : 'people'}
-                </Text>
-              </View>
-              {totalExpense > 0 && (
-                <View style={styles.amountBadgeGradient}>
-                  <Text style={styles.amountTextGradient}>₹{totalExpense.toLocaleString('en-IN')}</Text>
-                </View>
-              )}
-            </View>
-          </LinearGradient>
-        ) : (
-          <View style={styles.header}>
+        <LinearGradient
+          colors={[colors.primary, colors.primaryContainer]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientHeader}
+        >
+          <View style={styles.headerContent}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{plan.title}</Text>
-              <Text style={styles.subtitle}>
+              <Text style={styles.gradientTitle}>{plan.title}</Text>
+              <Text style={styles.gradientSubtitle}>
                 {participantCount} {participantCount === 1 ? 'person' : 'people'}
               </Text>
             </View>
             {totalExpense > 0 && (
-              <View style={styles.amountBadge}>
-                <Text style={styles.amountText}>₹{totalExpense.toLocaleString('en-IN')}</Text>
+              <View style={styles.amountBadgeGradient}>
+                <Text style={styles.amountTextGradient}>₹{totalExpense.toLocaleString('en-IN')}</Text>
               </View>
             )}
+          </View>
+        </LinearGradient>
+
+        {/* Progress bar */}
+        {totalTasks > 0 && (
+          <View style={styles.progressSection}>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+            </View>
+            <Text style={styles.progressText}>
+              {completedTaskCount}/{totalTasks} done
+            </Text>
           </View>
         )}
 
@@ -150,6 +148,30 @@ const styles = StyleSheet.create({
     fontFamily: fonts.headlineSemiBold,
     fontSize: 13,
     color: '#ffffff',
+  },
+  progressSection: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  progressBar: {
+    flex: 1,
+    height: 6,
+    backgroundColor: colors.surfaceContainer,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 3,
+  },
+  progressText: {
+    fontFamily: fonts.headlineSemiBold,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
   },
   footer: {
     paddingHorizontal: 20,

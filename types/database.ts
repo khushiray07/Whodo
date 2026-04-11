@@ -89,6 +89,14 @@ export type ActivityLogEntry = {
   created_at: string;
 };
 
+export type TaskComment = {
+  id: string;
+  task_id: string;
+  author_participant_id: string;
+  content: string;
+  created_at: string;
+};
+
 export type ExpenseSplit = {
   id: string;
   task_id: string;

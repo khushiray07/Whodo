@@ -16,9 +16,10 @@ import { strings } from '../../constants/strings';
 export default function HomeScreen() {
   const { profile } = useAuth();
   const { plans, loading, fetchPlans } = usePlans();
-  const [planStats, setPlanStats] = useState<Record<string, { participants: number; pending: number; expenses: number }>>({});
+  const [planStats, setPlanStats] = useState<Record<string, { participants: number; pending: number; completed: number; expenses: number }>>({});
   const [joinCode, setJoinCode] = useState('');
   const [showJoinInput, setShowJoinInput] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Refetch plans when screen gains focus (e.g. after deleting a plan)
   useFocusEffect(
@@ -50,6 +51,7 @@ export default function HomeScreen() {
       stats[row.plan_id] = {
         participants: Number(row.participant_count) || 0,
         pending: Number(row.pending_task_count) || 0,
+        completed: Number(row.completed_task_count) || 0,
         expenses: Number(row.total_expenses) || 0,
       };
     }
@@ -119,6 +121,20 @@ export default function HomeScreen() {
           </Pressable>
         </Modal>
 
+        {/* Search */}
+        {plans.length > 2 && (
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="🔍  Search plans..."
+              placeholderTextColor={colors.outlineVariant}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              clearButtonMode="while-editing"
+            />
+          </View>
+        )}
+
         {/* Active Plans */}
         {plans.length > 0 && (
           <View style={styles.section}>
@@ -129,14 +145,17 @@ export default function HomeScreen() {
               </View>
             </View>
             <View style={styles.planList}>
-              {plans.map((plan) => {
-                const stat = planStats[plan.id] ?? { participants: 0, pending: 0, expenses: 0 };
+              {plans
+                .filter((p) => !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((plan) => {
+                const stat = planStats[plan.id] ?? { participants: 0, pending: 0, completed: 0, expenses: 0 };
                 return (
                   <PlanCard
                     key={plan.id}
                     plan={plan}
                     participantCount={stat.participants}
                     pendingTaskCount={stat.pending}
+                    completedTaskCount={stat.completed}
                     totalExpense={stat.expenses}
                     onPress={() => router.push(`/plan/${plan.id}`)}
                   />
@@ -147,7 +166,13 @@ export default function HomeScreen() {
         )}
 
         {plans.length === 0 && !loading && (
-          <EmptyState title={strings.noPlansTitle} subtitle={strings.noPlansSubtitle} />
+          <EmptyState
+            emoji="📋"
+            title="No plans yet!"
+            subtitle="Start something new with your group. Pick a template below or create a custom plan."
+            actionLabel="Create Your First Plan"
+            onAction={() => router.push('/create-plan')}
+          />
         )}
 
         {/* Templates */}
@@ -278,6 +303,19 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '300',
     marginTop: -2,
+  },
+  searchContainer: {
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.lg,
+  },
+  searchInput: {
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: radii.full,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 15,
+    color: colors.onSurface,
   },
   joinButton: {
     flexDirection: 'row',

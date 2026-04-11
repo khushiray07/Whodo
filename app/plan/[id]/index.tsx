@@ -171,6 +171,9 @@ export default function TasksTab() {
                 key={task.id}
                 task={task}
                 assignee={task.assigned_to ? participantMap.get(task.assigned_to) : null}
+                participants={participants}
+                myParticipantId={myParticipant?.id}
+                showComments
                 onDone={() => handleDone(task.id)}
                 onClaim={() => handleClaim(task.id)}
                 onEdit={() => router.push({ pathname: '/create-task', params: { planId: id, taskId: task.id } })}

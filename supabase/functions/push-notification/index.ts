@@ -1,5 +1,6 @@
 // Supabase Edge Function: push-notification
 // Receives task change events and sends Expo push notifications
+// Supports both the direct invocation format and database webhook format
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -8,10 +9,36 @@ const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 
 serve(async (req) => {
   try {
-    const { plan_id, type, actor_name, task_title } = await req.json();
+    const payload = await req.json();
 
-    if (!plan_id || !type) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
+    let plan_id: string | undefined;
+    let type: string | undefined;
+    let body = '';
+    let actorUserId: string | undefined;
+
+    // Try parsing the old direct-invocation format first
+    if (payload.plan_id && payload.type) {
+      plan_id = payload.plan_id;
+      type = payload.type;
+      const { actor_name, task_title } = payload;
+
+      if (type === 'task_done') {
+        body = `${actor_name} completed "${task_title}"`;
+      } else if (type === 'task_claimed') {
+        body = `${actor_name} claimed "${task_title}"`;
+      }
+    }
+    // Try the database webhook format
+    else if (payload.type === 'INSERT' && payload.table === 'notifications' && payload.record) {
+      const record = payload.record;
+      plan_id = record.plan_id;
+      type = record.type;
+      body = record.body || '';
+      actorUserId = record.user_id;
+    }
+
+    if (!plan_id || !type || !body) {
+      return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
     }
 
     const supabase = createClient(
@@ -19,7 +46,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    // Get all participants with push tokens (excluding the actor)
+    // Get all participants with push tokens
     const { data: participants } = await supabase
       .from('participants')
       .select('user_id')
@@ -30,7 +57,14 @@ serve(async (req) => {
       return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
     }
 
-    const userIds = participants.map((p: any) => p.user_id);
+    // Exclude the actor who triggered the notification
+    const userIds = participants
+      .map((p: any) => p.user_id)
+      .filter((uid: string) => uid !== actorUserId);
+
+    if (userIds.length === 0) {
+      return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
+    }
 
     const { data: profiles } = await supabase
       .from('profiles')
@@ -41,18 +75,6 @@ serve(async (req) => {
     const tokens = (profiles ?? []).map((p: any) => p.push_token).filter(Boolean);
 
     if (tokens.length === 0) {
-      return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
-    }
-
-    // Build notification body
-    let body = '';
-    if (type === 'task_done') {
-      body = `${actor_name} completed "${task_title}"`;
-    } else if (type === 'task_claimed') {
-      body = `${actor_name} claimed "${task_title}"`;
-    }
-
-    if (!body) {
       return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
     }
 

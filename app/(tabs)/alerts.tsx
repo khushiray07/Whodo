@@ -26,7 +26,11 @@ export default function AlertsScreen() {
         </View>
 
         {notifications.length === 0 && !loading && (
-          <EmptyState title={strings.noAlerts} subtitle={strings.noAlertsSubtitle} />
+          <EmptyState
+            emoji="🔔"
+            title="All quiet!"
+            subtitle="When your crew claims tasks, logs expenses, or joins your plans, you'll see it here."
+          />
         )}
 
         <View style={styles.list}>
