@@ -224,7 +224,7 @@ export default function LandingPage() {
                   }}
                 >Start Planning <span style={{ fontSize: 18 }}>→</span></button>
                 <a
-                  href="https://expo.dev/accounts/raykhushi/projects/whodo/builds/6935ef63-143d-4918-b7c4-fb5c08248cf4"
+                  href="https://expo.dev/accounts/raykhushi/projects/whodo/builds/a8a89949-93ad-4450-a4fd-3fbe6706ff5e"
                   className="cta-ghost"
                   style={{
                     color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: 600,
@@ -562,7 +562,7 @@ export default function LandingPage() {
                   }}
                 >🌐 Open Web App</button>
                 <a
-                  href="https://expo.dev/accounts/raykhushi/projects/whodo/builds/6935ef63-143d-4918-b7c4-fb5c08248cf4"
+                  href="https://expo.dev/accounts/raykhushi/projects/whodo/builds/a8a89949-93ad-4450-a4fd-3fbe6706ff5e"
                   className="cta-ghost"
                   style={{
                     color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: 600,
