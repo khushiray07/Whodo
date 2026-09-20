@@ -1,248 +1,80 @@
-<div align="center">
+# Whodo
 
-# ✅ WHO-DO
+Group planning for shared tasks, expenses, and accountability.
 
-### Smart Group Planning & Expense Collaboration
+Whodo helps groups move coordination out of scattered chats and into one shared plan. It lets friends, flatmates, event teams, or trip groups create a plan, assign responsibilities, track shared expenses, and see who needs to do or pay what.
 
-**“Jiska naam, uska kaam.”**
+## Key Features
 
-A collaborative platform that helps groups **assign responsibilities, track tasks, manage shared expenses, and settle payments** — all in one place.
+- Create custom plans or start from templates for birthdays, trips, chores, hackathons, and dinners.
+- Add participants, invite others with a code, link, QR code, or WhatsApp share flow.
+- Create, claim, assign, edit, complete, and comment on tasks with deadlines.
+- Use smart task input to parse assignees, INR amounts, and simple deadlines from plain text.
+- Track expenses on tasks with equal or custom weighted splits.
+- View settlement recommendations, expense summaries, activity history, and alerts.
+- Manage profiles with avatar uploads and basic plan/task stats.
 
-🌐 **[Live Website](https://www.whodo.space/landing)**
+## Tech Stack
 
-🏆 **1st Place — SkillCaptain Demo Day 6.0**
+- Expo 54 and React Native 0.81
+- React 19 and TypeScript
+- Expo Router 6
+- Supabase Auth, Postgres, Realtime, Storage, RPCs, and Edge Functions
+- React Native Web for web output
+- Expo Notifications, SecureStore, Image Picker, Clipboard, and Linking
+- Vercel web export and EAS build configuration
 
-</div>
+## Screenshots / Demo
 
----
+No screenshots are committed yet.
 
-## 💡 About WHO-DO
+Demo seed scripts are available in `scripts/seed-goa.sql` and `scripts/seed-demo.sql` for populating sample Supabase data.
 
-Planning a trip, college event, party, or group activity usually starts with a WhatsApp group.
+## How to Run Locally
 
-Soon, messages get buried:
+Install dependencies:
 
-* Who was supposed to book the cab?
-* Who is bringing the snacks?
-* Who already completed their task?
-* Who paid for dinner?
-* How much does everyone owe?
-
-**WHO-DO brings all of this into one organized workspace.**
-
-Instead of searching through hundreds of messages, every responsibility has an owner and every shared expense has a clear record.
-
-> **Jiska naam, uska kaam.**
-
----
-
-## ✨ Features
-
-### 👥 Group Planning
-
-Create a plan for trips, events, college projects, parties, or any collaborative activity.
-
-### ✅ Task Assignment
-
-Assign responsibilities directly to individual group members so everyone knows exactly what they need to do.
-
-### 📋 Task Tracking
-
-Track tasks using clear states such as:
-
-* Pending
-* Completed
-
-This makes it easy to see what still needs attention.
-
-### 💰 Shared Expense Tracking
-
-Record expenses made by different members of the group and keep all spending information in one place.
-
-### 🤝 Smart Settlements
-
-WHO-DO helps calculate:
-
-* Who paid
-* Who owes money
-* How much each person needs to pay
-* Who should receive the payment
-
-No manual calculations required.
-
-### 🔗 Easy Group Joining
-
-Invite people to plans using shareable invite links/codes.
-
-### 💬 Collaborative Planning
-
-Members can coordinate around plans, responsibilities, tasks, and expenses without depending entirely on scattered chat messages.
-
-### 📱 Mobile-First Experience
-
-Designed to work smoothly on mobile devices for quick updates while users are travelling or participating in events.
-
----
-
-## 🎯 Problem WHO-DO Solves
-
-Most groups already coordinate using messaging applications.
-
-But messaging applications are great for **conversation**, not necessarily for **structured coordination**.
-
-For example:
-
-```text
-Trip Group
-
-Khushi → Book the cab
-Rahul  → Bring snacks
-Ananya → Reserve the hotel
-Aman   → Buy tickets
+```bash
+npm install
 ```
 
-After hundreds of messages, remembering these responsibilities becomes difficult.
+Create a `.env` file with the Supabase public client values:
 
-WHO-DO transforms that conversation into structured information:
-
-```text
-Plan: Goa Trip
-
-✅ Hotel Booking      → Ananya
-⏳ Cab Booking        → Khushi
-✅ Tickets            → Aman
-⏳ Snacks             → Rahul
-
-Total Expenses: ₹XXXX
-
-Khushi owes Rahul     → ₹XXX
-Aman owes Ananya      → ₹XXX
+```bash
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Everything stays organized and transparent.
+Apply the SQL migrations in `supabase/migrations` to your Supabase project in order. Optional demo data can be loaded from `scripts/`.
 
----
+Start Expo:
 
-## 🛠️ Tech Stack
-
-### Frontend
-
-* React.js
-* JavaScript
-* Responsive / Mobile-First UI
-
-### Backend
-
-* Node.js
-* REST APIs
-
-### Data
-
-* Database-backed storage for users, plans, members, tasks and expenses
-
-### Development Tools
-
-* Git
-* GitHub
-* VS Code
-
----
-
-## 🧩 Core Modules
-
-WHO-DO is built around a few main entities:
-
-```text
-User
- │
- ├── Creates / Joins Plan
- │
- ▼
-Plan
- │
- ├── Members
- ├── Tasks
- ├── Expenses
- ├── Comments / Collaboration
- └── Settlements
+```bash
+npm start
 ```
 
-A typical application flow looks like:
+Or run a specific target:
 
-```text
-User
-  ↓
-Frontend
-  ↓
-API
-  ↓
-Backend
-  ↓
-Database
-  ↓
-Backend
-  ↓
-Frontend
+```bash
+npm run web
+npm run ios
+npm run android
 ```
 
----
-
-## 🚀 Typical User Flow
-
-**1. Create a plan**
+## Project Structure
 
 ```text
-Goa Trip
-Birthday Party
-College Project
-Weekend Trek
+app/                 Expo Router screens and route groups
+components/          Reusable React Native UI components
+hooks/               Supabase-backed data hooks
+lib/                 Auth, invite, parsing, settlement, export, and push helpers
+supabase/migrations/ Database schema, RLS policies, RPCs, and triggers
+supabase/functions/  Supabase Edge Function for Expo push notifications
+scripts/             Demo seed SQL
 ```
 
-**2. Invite members**
+## Future Improvements
 
-Share the plan with friends or teammates.
-
-**3. Assign tasks**
-
-```text
-Book Hotel → Khushi
-Book Cab → Rahul
-Buy Snacks → Ananya
-```
-
-**4. Track progress**
-
-See which responsibilities are pending or completed.
-
-**5. Add expenses**
-
-Members can record expenses as they happen.
-
-**6. Settle the group**
-
-WHO-DO determines who owes whom and simplifies final settlement.
-
----
-
-## 🌍 Use Cases
-
-WHO-DO can be used for:
-
-* ✈️ Trips
-* 🎉 Parties
-* 🎓 College projects
-* 🏕️ Group outings
-* 🎂 Events
-* 🏠 Shared activities
-* 👨‍👩‍👧‍👦 Family planning
-* 💼 Small team coordination
-
----
-
-## 🏆 Achievement
-
-WHO-DO won **1st Place at SkillCaptain Demo Day 6.0**.
-
-The project was presented as a solution to a common real-world problem:
-
-> Groups com
+- Add CI/CD for Vercel web deploys and EAS mobile builds.
+- Add system/light/dark theme support.
+- Add automated tests for settlement logic, invite flows, and Supabase RPC behavior.
